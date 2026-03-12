@@ -1,0 +1,19 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "twenty-front - start dev",
+			"type": "shell",
+			"command": "npx nx start twenty-front",
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "new",
+				"close": false
+			},
+			"problemMatcher": []
+		}
+	]
+}

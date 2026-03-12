@@ -1,0 +1,10 @@
+{
+  "install": "yarn install",
+  "start": "npx nx start twenty-front",
+  "terminals": [
+    {
+      "name": "Development Server",
+      "command": "yarn start"
+    }
+  ]
+}

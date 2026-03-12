@@ -1,0 +1,80 @@
+import { PageLayoutComponentInstanceContext } from '@/page-layout/states/contexts/PageLayoutComponentInstanceContext';
+import { pageLayoutDraftComponentState } from '@/page-layout/states/pageLayoutDraftComponentState';
+import { sortTabsByPosition } from '@/page-layout/utils/sortTabsByPosition';
+import { calculateNewPosition } from '@/ui/layout/draggable-list/utils/calculateNewPosition';
+import { useAvailableComponentInstanceIdOrThrow } from '@/ui/utilities/state/component-state/hooks/useAvailableComponentInstanceIdOrThrow';
+import { useAtomComponentStateCallbackState } from '@/ui/utilities/state/jotai/hooks/useAtomComponentStateCallbackState';
+import { useStore } from 'jotai';
+import { useCallback } from 'react';
+
+export const useMovePageLayoutTab = (pageLayoutIdFromProps?: string) => {
+  const pageLayoutId = useAvailableComponentInstanceIdOrThrow(
+    PageLayoutComponentInstanceContext,
+    pageLayoutIdFromProps,
+  );
+
+  const pageLayoutDraftState = useAtomComponentStateCallbackState(
+    pageLayoutDraftComponentState,
+    pageLayoutId,
+  );
+
+  const store = useStore();
+
+  const moveLeft = useCallback(
+    (tabId: string) => {
+      store.set(pageLayoutDraftState, (prev) => {
+        const sorted = sortTabsByPosition(prev.tabs);
+        const index = sorted.findIndex((t) => t.id === tabId);
+        if (index <= 0) return prev;
+
+        const items = sorted.filter((t) => t.id !== tabId);
+        const destinationIndex = index - 1;
+        const sourceIndex = index;
+
+        const newPosition = calculateNewPosition({
+          destinationIndex,
+          sourceIndex,
+          items,
+        });
+
+        return {
+          ...prev,
+          tabs: prev.tabs.map((t) =>
+            t.id === tabId ? { ...t, position: newPosition } : t,
+          ),
+        };
+      });
+    },
+    [pageLayoutDraftState, store],
+  );
+
+  const moveRight = useCallback(
+    (tabId: string) => {
+      store.set(pageLayoutDraftState, (prev) => {
+        const sorted = sortTabsByPosition(prev.tabs);
+        const index = sorted.findIndex((t) => t.id === tabId);
+        if (index < 0 || index >= sorted.length - 1) return prev;
+
+        const items = sorted.filter((t) => t.id !== tabId);
+        const destinationIndex = index + 1;
+        const sourceIndex = index;
+
+        const newPosition = calculateNewPosition({
+          destinationIndex,
+          sourceIndex,
+          items,
+        });
+
+        return {
+          ...prev,
+          tabs: prev.tabs.map((t) =>
+            t.id === tabId ? { ...t, position: newPosition } : t,
+          ),
+        };
+      });
+    },
+    [pageLayoutDraftState, store],
+  );
+
+  return { moveLeft, moveRight };
+};
