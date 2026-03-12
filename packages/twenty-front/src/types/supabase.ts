@@ -1,0 +1,371 @@
+// Tipagens TypeScript para todas as tabelas do Supabase (Fase 2)
+// Cada tipo reflete exatamente o schema SQL das migrations 00008-00012
+
+// ===================== EMPRESAS =====================
+export type Empresa = {
+  id: string;
+  tenant_id: string;
+  razao_social: string;
+  nome_fantasia: string | null;
+  cnpj: string | null;
+  cnae_principal: string | null;
+  porte: 'MEI' | 'ME' | 'EPP' | 'Médio' | 'Grande' | null;
+  regime_tributario:
+    | 'Simples Nacional'
+    | 'Lucro Presumido'
+    | 'Lucro Real'
+    | 'Imune/Isento'
+    | null;
+  segmento: string | null;
+  nicho: string | null;
+  faturamento_estimado: number | null;
+  colaboradores: number | null;
+  endereco: string | null;
+  cidade: string | null;
+  uf: string | null;
+  cep: string | null;
+  site: string | null;
+  email_principal: string | null;
+  telefone: string | null;
+  dono_conta_id: string | null;
+  unidade_negocio: string | null;
+  tags: string[];
+  observacoes: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+export type EmpresaInsert = Omit<
+  Empresa,
+  'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'deleted_at'
+> & {
+  id?: string;
+  deleted_at?: string | null;
+};
+
+export type EmpresaUpdate = Partial<
+  Omit<Empresa, 'id' | 'tenant_id' | 'created_at' | 'updated_at'>
+>;
+
+// ===================== CONTATOS =====================
+export type Contato = {
+  id: string;
+  tenant_id: string;
+  empresa_id: string | null;
+  nome: string;
+  cargo: string | null;
+  email: string | null;
+  telefone: string | null;
+  whatsapp: string | null;
+  papel_decisao:
+    | 'Decisor'
+    | 'Influenciador'
+    | 'Aprovador'
+    | 'Usuario'
+    | 'Comprador'
+    | 'Gatekeeper'
+    | null;
+  canal_preferido:
+    | 'Email'
+    | 'Telefone'
+    | 'WhatsApp'
+    | 'Presencial'
+    | 'Videoconferência'
+    | null;
+  is_principal: boolean;
+  consentimento: boolean;
+  consentimento_data: string | null;
+  data_ultimo_contato: string | null;
+  observacoes: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+export type ContatoInsert = Omit<
+  Contato,
+  'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'deleted_at'
+> & {
+  id?: string;
+  deleted_at?: string | null;
+};
+
+export type ContatoUpdate = Partial<
+  Omit<Contato, 'id' | 'tenant_id' | 'created_at' | 'updated_at'>
+>;
+
+// ===================== ORIGENS LEAD =====================
+export type OrigemLead = {
+  id: string;
+  tenant_id: string;
+  nome: string;
+  tipo:
+    | 'Inbound'
+    | 'Outbound'
+    | 'Indicação'
+    | 'Evento'
+    | 'Parceria'
+    | 'Mídia Paga'
+    | 'Orgânico'
+    | 'Outro'
+    | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type OrigemLeadInsert = Omit<
+  OrigemLead,
+  'id' | 'tenant_id' | 'created_at' | 'updated_at'
+> & {
+  id?: string;
+};
+
+export type OrigemLeadUpdate = Partial<
+  Omit<OrigemLead, 'id' | 'tenant_id' | 'created_at' | 'updated_at'>
+>;
+
+// ===================== LEADS =====================
+export type LeadStatusTriagem =
+  | 'Novo'
+  | 'Contatado'
+  | 'Qualificado'
+  | 'Desqualificado'
+  | 'Convertido';
+
+export type LeadTemperatura = 'Frio' | 'Morno' | 'Quente';
+
+export type Lead = {
+  id: string;
+  tenant_id: string;
+  nome: string;
+  empresa: string | null;
+  email: string | null;
+  telefone: string | null;
+  cnpj: string | null;
+  origem_id: string | null;
+  origem_detalhe: string | null;
+  canal: string | null;
+  campanha: string | null;
+  interesse_principal: string | null;
+  descricao_dor: string | null;
+  score: number;
+  temperatura: LeadTemperatura | null;
+  status_triagem: LeadStatusTriagem;
+  responsavel_id: string | null;
+  unidade_negocio: string | null;
+  data_primeiro_contato: string | null;
+  data_qualificacao: string | null;
+  convertido_empresa_id: string | null;
+  convertido_contato_id: string | null;
+  data_conversao: string | null;
+  observacoes: string | null;
+  tags: string[];
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+export type LeadInsert = Omit<
+  Lead,
+  'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'deleted_at'
+> & {
+  id?: string;
+  deleted_at?: string | null;
+};
+
+export type LeadUpdate = Partial<
+  Omit<Lead, 'id' | 'tenant_id' | 'created_at' | 'updated_at'>
+>;
+
+// ===================== PIPELINES =====================
+export type Pipeline = {
+  id: string;
+  tenant_id: string;
+  nome: string;
+  descricao: string | null;
+  is_default: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PipelineInsert = Omit<
+  Pipeline,
+  'id' | 'tenant_id' | 'created_at' | 'updated_at'
+> & {
+  id?: string;
+};
+
+export type PipelineUpdate = Partial<
+  Omit<Pipeline, 'id' | 'tenant_id' | 'created_at' | 'updated_at'>
+>;
+
+// ===================== PIPELINE ETAPAS =====================
+export type PipelineEtapaTipo = 'aberto' | 'ganho' | 'perdido';
+
+export type PipelineEtapa = {
+  id: string;
+  tenant_id: string;
+  pipeline_id: string;
+  nome: string;
+  posicao: number;
+  cor: string;
+  probabilidade: number;
+  tipo: PipelineEtapaTipo;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PipelineEtapaInsert = Omit<
+  PipelineEtapa,
+  'id' | 'tenant_id' | 'created_at' | 'updated_at'
+> & {
+  id?: string;
+};
+
+export type PipelineEtapaUpdate = Partial<
+  Omit<PipelineEtapa, 'id' | 'tenant_id' | 'created_at' | 'updated_at'>
+>;
+
+// ===================== MOTIVOS PERDA =====================
+export type MotivoPerda = {
+  id: string;
+  tenant_id: string;
+  nome: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type MotivoPerdaInsert = Omit<
+  MotivoPerda,
+  'id' | 'tenant_id' | 'created_at' | 'updated_at'
+> & {
+  id?: string;
+};
+
+export type MotivoPerdaUpdate = Partial<
+  Omit<MotivoPerda, 'id' | 'tenant_id' | 'created_at' | 'updated_at'>
+>;
+
+// ===================== NEGOCIOS =====================
+export type NegocioStatusFinal = 'Aberto' | 'Ganho' | 'Perdido';
+
+export type Negocio = {
+  id: string;
+  tenant_id: string;
+  titulo: string;
+  empresa_id: string | null;
+  contato_principal_id: string | null;
+  lead_id: string | null;
+  pipeline_id: string;
+  etapa_id: string;
+  responsavel_id: string | null;
+  unidade_negocio: string | null;
+  valor_estimado: number;
+  valor_mensalidade: number | null;
+  valor_setup: number | null;
+  probabilidade: number;
+  origem: string | null;
+  servico: string | null;
+  pacote: string | null;
+  temperatura: LeadTemperatura | null;
+  data_prevista_fechamento: string | null;
+  data_fechamento: string | null;
+  status_final: NegocioStatusFinal | null;
+  motivo_perda_id: string | null;
+  motivo_perda_detalhe: string | null;
+  proxima_atividade: string | null;
+  proxima_atividade_data: string | null;
+  observacoes: string | null;
+  tags: string[];
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+export type NegocioInsert = Omit<
+  Negocio,
+  'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'deleted_at'
+> & {
+  id?: string;
+  deleted_at?: string | null;
+};
+
+export type NegocioUpdate = Partial<
+  Omit<Negocio, 'id' | 'tenant_id' | 'created_at' | 'updated_at'>
+>;
+
+// ===================== ATIVIDADES =====================
+export type AtividadeTipo =
+  | 'Tarefa'
+  | 'Reunião'
+  | 'Chamada'
+  | 'Email'
+  | 'WhatsApp'
+  | 'Nota'
+  | 'Visita'
+  | 'Outro';
+
+export type AtividadeStatus =
+  | 'Pendente'
+  | 'Em andamento'
+  | 'Concluída'
+  | 'Cancelada';
+
+export type AtividadePrioridade = 'Baixa' | 'Normal' | 'Alta' | 'Urgente';
+
+export type AtividadeRecorrencia =
+  | 'Nenhuma'
+  | 'Diária'
+  | 'Semanal'
+  | 'Quinzenal'
+  | 'Mensal';
+
+export type Atividade = {
+  id: string;
+  tenant_id: string;
+  tipo: AtividadeTipo;
+  titulo: string;
+  descricao: string | null;
+  lead_id: string | null;
+  empresa_id: string | null;
+  contato_id: string | null;
+  negocio_id: string | null;
+  responsavel_id: string | null;
+  criado_por_id: string | null;
+  data_inicio: string | null;
+  data_fim: string | null;
+  dia_inteiro: boolean;
+  duracao_minutos: number | null;
+  status: AtividadeStatus;
+  prioridade: AtividadePrioridade;
+  resultado: string | null;
+  lembrete_minutos: number | null;
+  recorrencia: AtividadeRecorrencia;
+  observacoes: string | null;
+  tags: string[];
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+export type AtividadeInsert = Omit<
+  Atividade,
+  'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'deleted_at'
+> & {
+  id?: string;
+  deleted_at?: string | null;
+};
+
+export type AtividadeUpdate = Partial<
+  Omit<Atividade, 'id' | 'tenant_id' | 'created_at' | 'updated_at'>
+>;
