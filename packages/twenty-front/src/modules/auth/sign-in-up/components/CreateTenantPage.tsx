@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useAuthContext } from '@/auth/hooks/useAuthContext';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '~/lib/supabase';
 import styles from './SignInUpPage.module.css';
 
 // Página de onboarding: o usuário cria seu primeiro tenant (escritório)
@@ -23,24 +23,16 @@ export const CreateTenantPage = () => {
     setLoading(true);
 
     try {
-      const { data: tenant, error: tenantError } = await supabase
-        .from('tenants')
-        .insert({ name, cnpj: cnpj || null })
-        .select()
-        .single();
+      // Usa função SECURITY DEFINER que cria tenant + vínculo owner
+      // de forma atômica, contornando o RLS
+      const { data, error: rpcError } = await supabase.rpc(
+        'create_tenant_with_owner',
+        { p_name: name, p_cnpj: cnpj || null },
+      );
 
-      if (tenantError) throw new Error(tenantError.message);
+      if (rpcError) throw new Error(rpcError.message);
 
-      const { error: utError } = await supabase.from('user_tenants').insert({
-        user_id: user.id,
-        tenant_id: tenant.id,
-        role: 'owner',
-        scope: 'all',
-      });
-
-      if (utError) throw new Error(utError.message);
-
-      await setActiveTenant(tenant.id);
+      await setActiveTenant(data.id);
       navigate('/');
     } catch (err) {
       const message =

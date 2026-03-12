@@ -45,9 +45,16 @@ export default defineConfig(({ command }) => {
     ? path.resolve(__dirname, './tsconfig.lib.json')
     : path.resolve(__dirname, './tsconfig.json');
 
+  // Use relative paths for the checker plugin to avoid TS5042 errors
+  // when the workspace path contains spaces (shell: true in vite-plugin-checker
+  // splits unquoted absolute paths at spaces).
+  const tsConfigRelativePath = isBuildCommand
+    ? './tsconfig.lib.json'
+    : './tsconfig.json';
+
   const checkersConfig: Checkers = {
     typescript: {
-      tsconfigPath: tsConfigPath,
+      tsconfigPath: tsConfigRelativePath,
     },
   };
 

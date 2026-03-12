@@ -6,10 +6,10 @@ import fs from 'fs';
 import path from 'path';
 import { visualizer } from 'rollup-plugin-visualizer';
 import {
-  defineConfig,
-  loadEnv,
-  type PluginOption,
-  searchForWorkspaceRoot,
+    defineConfig,
+    loadEnv,
+    type PluginOption,
+    searchForWorkspaceRoot,
 } from 'vite';
 import svgr from 'vite-plugin-svgr';
 import tsconfigPaths from 'vite-tsconfig-paths';
@@ -226,7 +226,7 @@ export default defineConfig(({ mode }) => {
       },
     },
 
-    envPrefix: 'REACT_APP_',
+    envPrefix: ['REACT_APP_', 'VITE_'],
 
     define: {
       _env_: {

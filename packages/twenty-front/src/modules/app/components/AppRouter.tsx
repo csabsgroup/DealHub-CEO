@@ -1,21 +1,54 @@
-import { useCreateAppRouter } from '@/app/hooks/useCreateAppRouter';
-import { currentUserState } from '@/auth/states/currentUserState';
-import { useAtomStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomStateValue';
-import { RouterProvider } from 'react-router-dom';
+import { ProtectedRoute } from '@/auth/components/ProtectedRoute';
+import { lazy, Suspense } from 'react';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+
+const SignInUpPage = lazy(() =>
+  import('@/auth/sign-in-up/components/SignInUpPage').then((m) => ({
+    default: m.SignInUpPage,
+  })),
+);
+
+const CreateTenantPage = lazy(() =>
+  import('@/auth/sign-in-up/components/CreateTenantPage').then((m) => ({
+    default: m.CreateTenantPage,
+  })),
+);
+
+const DashboardPage = lazy(() =>
+  import('~/pages/dashboard/DashboardPage').then((m) => ({
+    default: m.DashboardPage,
+  })),
+);
+
+const Loading = () => (
+  <div
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '100vh',
+    }}
+  >
+    Carregando...
+  </div>
+);
 
 export const AppRouter = () => {
-  // We want to disable logic function settings but keep the code for now
-  const isFunctionSettingsEnabled = false;
-
-  const currentUser = useAtomStateValue(currentUserState);
-
-  const isAdminPageEnabled =
-    (currentUser?.canImpersonate || currentUser?.canAccessFullAdminPanel) ??
-    false;
-
   return (
-    <RouterProvider
-      router={useCreateAppRouter(isFunctionSettingsEnabled, isAdminPageEnabled)}
-    />
+    <BrowserRouter>
+      <Suspense fallback={<Loading />}>
+        <Routes>
+          {/* Rotas públicas */}
+          <Route path="/auth" element={<SignInUpPage />} />
+
+          {/* Rotas protegidas (requer sessão ativa) */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/create-tenant" element={<CreateTenantPage />} />
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Route>
+        </Routes>
+      </Suspense>
+    </BrowserRouter>
   );
 };

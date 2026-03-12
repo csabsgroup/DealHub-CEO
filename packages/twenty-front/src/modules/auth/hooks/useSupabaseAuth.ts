@@ -6,7 +6,7 @@ import {
     type Tenant,
     type UserTenant,
 } from '@/auth/types/auth.types';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '~/lib/supabase';
 
 // Hook principal de autenticação via Supabase
 export const useSupabaseAuth = () => {
