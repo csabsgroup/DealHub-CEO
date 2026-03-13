@@ -7,6 +7,7 @@ import {
     IconBuildingSkyscraper,
     IconLayoutDashboard,
     IconLayoutKanban,
+    IconListCheck,
     IconLogout,
     IconSettings,
     IconTarget,
@@ -191,6 +192,7 @@ const NAV_ITEMS = [
   },
   { to: '/contatos', label: 'Contatos', Icon: IconUsers, end: false },
   { to: '/negocios', label: 'Negócios', Icon: IconLayoutKanban, end: false },
+  { to: '/atividades', label: 'Atividades', Icon: IconListCheck, end: false },
   { to: '/configuracoes', label: 'Configurações', Icon: IconSettings, end: false },
 ] as const;
 

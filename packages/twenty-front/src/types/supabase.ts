@@ -369,3 +369,145 @@ export type AtividadeInsert = Omit<
 export type AtividadeUpdate = Partial<
   Omit<Atividade, 'id' | 'tenant_id' | 'created_at' | 'updated_at'>
 >;
+
+// ===================== SERVICOS =====================
+export type ServicoCategoria =
+  | 'Contabilidade'
+  | 'Fiscal'
+  | 'Folha de Pagamento'
+  | 'Societário'
+  | 'Consultoria'
+  | 'Financeiro'
+  | 'Legalização'
+  | 'Auditoria'
+  | 'Outro';
+
+export type ServicoTipoCobranca = 'Recorrente' | 'Avulso';
+
+export type Servico = {
+  id: string;
+  tenant_id: string;
+  nome: string;
+  categoria: ServicoCategoria | null;
+  descricao_comercial: string | null;
+  preco_minimo: number;
+  preco_sugerido: number;
+  tipo_cobranca: ServicoTipoCobranca;
+  is_active: boolean;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+export type ServicoInsert = Omit<
+  Servico,
+  'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'deleted_at'
+> & {
+  id?: string;
+  deleted_at?: string | null;
+};
+
+export type ServicoUpdate = Partial<
+  Omit<Servico, 'id' | 'tenant_id' | 'created_at' | 'updated_at'>
+>;
+
+// ===================== PACOTES =====================
+export type Pacote = {
+  id: string;
+  tenant_id: string;
+  nome: string;
+  descricao: string | null;
+  preco_sugerido: number;
+  is_active: boolean;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+export type PacoteInsert = Omit<
+  Pacote,
+  'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'deleted_at'
+> & {
+  id?: string;
+  deleted_at?: string | null;
+};
+
+export type PacoteUpdate = Partial<
+  Omit<Pacote, 'id' | 'tenant_id' | 'created_at' | 'updated_at'>
+>;
+
+// ===================== PACOTE_SERVICOS =====================
+export type PacoteServico = {
+  id: string;
+  tenant_id: string;
+  pacote_id: string;
+  servico_id: string;
+  quantidade: number;
+  preco_unitario_override: number | null;
+  created_at: string;
+};
+
+export type PacoteServicoInsert = Omit<
+  PacoteServico,
+  'id' | 'tenant_id' | 'created_at'
+> & {
+  id?: string;
+};
+
+// ===================== PROPOSTAS =====================
+export type PropostaStatus = 'Rascunho' | 'Enviada' | 'Aceita' | 'Recusada';
+
+export type Proposta = {
+  id: string;
+  tenant_id: string;
+  negocio_id: string | null;
+  numero: string;
+  versao: number;
+  valor_total: number;
+  valor_setup: number;
+  valor_mensalidade: number;
+  validade_dias: number;
+  data_validade: string | null;
+  status: PropostaStatus;
+  observacoes: string | null;
+  criado_por_id: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+export type PropostaInsert = Omit<
+  Proposta,
+  'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'deleted_at'
+> & {
+  id?: string;
+  deleted_at?: string | null;
+};
+
+export type PropostaUpdate = Partial<
+  Omit<Proposta, 'id' | 'tenant_id' | 'created_at' | 'updated_at'>
+>;
+
+// ===================== PROPOSTA_ITENS =====================
+export type PropostaItem = {
+  id: string;
+  tenant_id: string;
+  proposta_id: string;
+  servico_id: string | null;
+  descricao: string;
+  quantidade: number;
+  valor_unitario: number;
+  valor_total: number;
+  tipo_cobranca: ServicoTipoCobranca;
+  posicao: number;
+  created_at: string;
+};
+
+export type PropostaItemInsert = Omit<
+  PropostaItem,
+  'id' | 'tenant_id' | 'created_at'
+> & {
+  id?: string;
+};

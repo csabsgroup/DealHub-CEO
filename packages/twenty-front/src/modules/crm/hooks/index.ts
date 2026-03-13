@@ -25,3 +25,15 @@ export {
     useAtividadesByLead, useAtividadesByNegocio, useCreateAtividade, useDeleteAtividade, useMinhasAtividadesPendentes, useUpdateAtividade
 } from './useAtividades';
 
+export {
+    useCreateServico, useDeleteServico, useServico, useServicos, useUpdateServico
+} from './useServicos';
+
+export {
+    useAddServicoPacote, useCreatePacote, useDeletePacote, usePacote, usePacoteServicos, usePacotes, useRemoveServicoPacote, useUpdatePacote
+} from './usePacotes';
+
+export {
+    useCreateProposta, useCreatePropostaItem, useDeleteProposta, useDeletePropostaItem, useProposta, usePropostaItens, usePropostas, usePropostasByNegocio, useUpdateProposta, useUpdatePropostaItem
+} from './usePropostas';
+

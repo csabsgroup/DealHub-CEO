@@ -1,4 +1,4 @@
-import { useCreateEmpresa } from '@/crm/hooks/useEmpresas';
+import { useCreateAtividade } from '@/crm/hooks/useAtividades';
 import { styled } from '@linaria/react';
 import { useRef, useState } from 'react';
 import { Button } from 'twenty-ui/input';
@@ -7,35 +7,39 @@ import { themeCssVariables } from 'twenty-ui/theme-constants';
 
 // --------------- Types ---------------
 
-type NovaEmpresaModalProps = {
+type NovaAtividadeModalProps = {
   isOpen: boolean;
   onClose: () => void;
 };
 
-type EmpresaFormData = {
-  razao_social: string;
-  nome_fantasia: string;
-  cnpj: string;
-  regime_tributario: string;
-  segmento: string;
-  faturamento_estimado: string;
+type AtividadeFormData = {
+  titulo: string;
+  tipo: string;
+  descricao: string;
+  data_inicio: string;
+  prioridade: string;
 };
 
-const EMPTY_FORM: EmpresaFormData = {
-  razao_social: '',
-  nome_fantasia: '',
-  cnpj: '',
-  regime_tributario: '',
-  segmento: '',
-  faturamento_estimado: '',
+const EMPTY_FORM: AtividadeFormData = {
+  titulo: '',
+  tipo: 'Tarefa',
+  descricao: '',
+  data_inicio: '',
+  prioridade: 'Normal',
 };
 
-const REGIMES_TRIBUTARIOS = [
-  'Simples Nacional',
-  'Lucro Presumido',
-  'Lucro Real',
-  'Imune/Isento',
+const TIPOS = [
+  'Tarefa',
+  'Reunião',
+  'Chamada',
+  'Email',
+  'WhatsApp',
+  'Nota',
+  'Visita',
+  'Outro',
 ];
+
+const PRIORIDADES = ['Baixa', 'Normal', 'Alta', 'Urgente'];
 
 // --------------- Styled Components ---------------
 
@@ -117,6 +121,30 @@ const StyledSelect = styled.select`
   }
 `;
 
+const StyledTextarea = styled.textarea`
+  min-height: 72px;
+  padding: ${themeCssVariables.spacing[2]} ${themeCssVariables.spacing[3]};
+  border: 1px solid ${themeCssVariables.border.color.medium};
+  border-radius: ${themeCssVariables.border.radius.sm};
+  background: ${themeCssVariables.background.primary};
+  color: ${themeCssVariables.font.color.primary};
+  font-size: ${themeCssVariables.font.size.sm};
+  outline: none;
+  transition: border-color 0.15s ease;
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  font-family: inherit;
+
+  &:focus {
+    border-color: ${themeCssVariables.accent.primary};
+  }
+
+  &::placeholder {
+    color: ${themeCssVariables.font.color.tertiary};
+  }
+`;
+
 const StyledFooter = styled.div`
   display: flex;
   justify-content: flex-end;
@@ -132,15 +160,15 @@ const StyledErrorMessage = styled.p`
 
 // --------------- Component ---------------
 
-export const NovaEmpresaModal = ({ isOpen, onClose }: NovaEmpresaModalProps) => {
-  const [formData, setFormData] = useState<EmpresaFormData>(EMPTY_FORM);
+export const NovaAtividadeModal = ({ isOpen, onClose }: NovaAtividadeModalProps) => {
+  const [formData, setFormData] = useState<AtividadeFormData>(EMPTY_FORM);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
-  const { mutateAsync: createEmpresa, isPending } = useCreateEmpresa();
+  const { mutateAsync: createAtividade, isPending } = useCreateAtividade();
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -156,32 +184,47 @@ export const NovaEmpresaModal = ({ isOpen, onClose }: NovaEmpresaModalProps) => 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.razao_social.trim()) {
-      setErrorMessage('Razão Social é obrigatório.');
+    if (!formData.titulo.trim()) {
+      setErrorMessage('Título é obrigatório.');
       return;
     }
 
     try {
-      await createEmpresa({
-        razao_social: formData.razao_social.trim(),
-        nome_fantasia: formData.nome_fantasia.trim() || null,
-        cnpj: formData.cnpj.trim() || null,
-        regime_tributario:
-          (formData.regime_tributario as
-            | 'Simples Nacional'
-            | 'Lucro Presumido'
-            | 'Lucro Real'
-            | 'Imune/Isento') || null,
-        segmento: formData.segmento.trim() || null,
-        faturamento_estimado: formData.faturamento_estimado
-          ? Number(formData.faturamento_estimado)
-          : null,
+      await createAtividade({
+        titulo: formData.titulo.trim(),
+        tipo: formData.tipo as
+          | 'Tarefa'
+          | 'Reunião'
+          | 'Chamada'
+          | 'Email'
+          | 'WhatsApp'
+          | 'Nota'
+          | 'Visita'
+          | 'Outro',
+        descricao: formData.descricao.trim() || null,
+        data_inicio: formData.data_inicio || null,
+        data_fim: null,
+        dia_inteiro: false,
+        duracao_minutos: null,
+        status: 'Pendente',
+        prioridade: formData.prioridade as 'Baixa' | 'Normal' | 'Alta' | 'Urgente',
+        resultado: null,
+        lembrete_minutos: null,
+        recorrencia: 'Nenhuma',
+        observacoes: null,
         tags: [],
+        completed_at: null,
+        lead_id: null,
+        empresa_id: null,
+        contato_id: null,
+        negocio_id: null,
+        responsavel_id: null,
+        criado_por_id: null,
       });
 
       handleClose();
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro ao criar empresa.';
+      const message = err instanceof Error ? err.message : 'Erro ao criar atividade.';
       setErrorMessage(message);
     }
   };
@@ -191,87 +234,85 @@ export const NovaEmpresaModal = ({ isOpen, onClose }: NovaEmpresaModalProps) => 
       {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
       <div onMouseDown={(e) => e.stopPropagation()}>
       <ModalHeader>
-        <StyledTitle>Nova Empresa</StyledTitle>
+        <StyledTitle>Nova Atividade</StyledTitle>
       </ModalHeader>
 
       <ModalContent>
-        <StyledForm onSubmit={handleSubmit} id="nova-empresa-form" ref={formRef}>
-          {/* Razão Social - full width */}
+        <StyledForm onSubmit={handleSubmit} id="nova-atividade-form" ref={formRef}>
+          {/* Título - full width */}
           <StyledFieldGroup>
-            <StyledLabel htmlFor="razao_social">
-              Razão Social<StyledRequired>*</StyledRequired>
+            <StyledLabel htmlFor="atividade-titulo">
+              O que precisa ser feito?<StyledRequired>*</StyledRequired>
             </StyledLabel>
             <StyledInput
-              id="razao_social"
-              name="razao_social"
+              id="atividade-titulo"
+              name="titulo"
               type="text"
-              placeholder="Ex: Empresa ABC Ltda"
-              value={formData.razao_social}
+              placeholder="Ex: Ligar para cliente sobre proposta"
+              value={formData.titulo}
               onChange={handleChange}
               autoFocus
             />
           </StyledFieldGroup>
 
-          {/* Nome Fantasia + CNPJ */}
+          {/* Tipo + Prioridade */}
           <StyledField>
             <StyledFieldGroup>
-              <StyledLabel htmlFor="nome_fantasia">Nome Fantasia</StyledLabel>
-              <StyledInput
-                id="nome_fantasia"
-                name="nome_fantasia"
-                type="text"
-                placeholder="Ex: Empresa ABC"
-                value={formData.nome_fantasia}
-                onChange={handleChange}
-              />
-            </StyledFieldGroup>
-
-            <StyledFieldGroup>
-              <StyledLabel htmlFor="cnpj">CNPJ</StyledLabel>
-              <StyledInput
-                id="cnpj"
-                name="cnpj"
-                type="text"
-                placeholder="00.000.000/0001-00"
-                value={formData.cnpj}
-                onChange={handleChange}
-              />
-            </StyledFieldGroup>
-          </StyledField>
-
-          {/* Regime Tributário + Segmento */}
-          <StyledField>
-            <StyledFieldGroup>
-              <StyledLabel htmlFor="regime_tributario">
-                Regime Tributário
-              </StyledLabel>
+              <StyledLabel htmlFor="atividade-tipo">Tipo</StyledLabel>
               <StyledSelect
-                id="regime_tributario"
-                name="regime_tributario"
-                value={formData.regime_tributario}
+                id="atividade-tipo"
+                name="tipo"
+                value={formData.tipo}
                 onChange={handleChange}
               >
-                <option value="">Selecione...</option>
-                {REGIMES_TRIBUTARIOS.map((regime) => (
-                  <option key={regime} value={regime}>
-                    {regime}
+                {TIPOS.map((tipo) => (
+                  <option key={tipo} value={tipo}>
+                    {tipo}
                   </option>
                 ))}
               </StyledSelect>
             </StyledFieldGroup>
 
             <StyledFieldGroup>
-              <StyledLabel htmlFor="segmento">Segmento</StyledLabel>
-              <StyledInput
-                id="segmento"
-                name="segmento"
-                type="text"
-                placeholder="Ex: Comércio, Serviços..."
-                value={formData.segmento}
+              <StyledLabel htmlFor="atividade-prioridade">Prioridade</StyledLabel>
+              <StyledSelect
+                id="atividade-prioridade"
+                name="prioridade"
+                value={formData.prioridade}
                 onChange={handleChange}
-              />
+              >
+                {PRIORIDADES.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </StyledSelect>
             </StyledFieldGroup>
           </StyledField>
+
+          {/* Data de início */}
+          <StyledFieldGroup>
+            <StyledLabel htmlFor="atividade-data">Data de Início</StyledLabel>
+            <StyledInput
+              id="atividade-data"
+              name="data_inicio"
+              type="datetime-local"
+              value={formData.data_inicio}
+              onChange={handleChange}
+            />
+          </StyledFieldGroup>
+
+          {/* Descrição */}
+          <StyledFieldGroup>
+            <StyledLabel htmlFor="atividade-descricao">Descrição</StyledLabel>
+            <StyledTextarea
+              id="atividade-descricao"
+              name="descricao"
+              placeholder="Descreva os detalhes desta atividade..."
+              value={formData.descricao}
+              onChange={handleChange}
+            />
+          </StyledFieldGroup>
 
           {errorMessage && (
             <StyledErrorMessage>{errorMessage}</StyledErrorMessage>
@@ -293,7 +334,7 @@ export const NovaEmpresaModal = ({ isOpen, onClose }: NovaEmpresaModalProps) => 
             variant="primary"
             accent="blue"
             size="medium"
-            title="Salvar Empresa"
+            title="Criar Atividade"
             isLoading={isPending}
             type="button"
             onClick={() => formRef.current?.requestSubmit()}

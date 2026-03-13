@@ -27,6 +27,30 @@ const EmpresasPage = lazy(() =>
   })),
 );
 
+const LeadsPage = lazy(() =>
+  import('~/pages/leads/LeadsPage').then((m) => ({
+    default: m.LeadsPage,
+  })),
+);
+
+const PipelinePage = lazy(() =>
+  import('~/pages/pipeline/PipelinePage').then((m) => ({
+    default: m.PipelinePage,
+  })),
+);
+
+const ContatosPage = lazy(() =>
+  import('~/pages/contatos/ContatosPage').then((m) => ({
+    default: m.ContatosPage,
+  })),
+);
+
+const AtividadesPage = lazy(() =>
+  import('~/pages/atividades/AtividadesPage').then((m) => ({
+    default: m.AtividadesPage,
+  })),
+);
+
 const Loading = () => (
   <div
     style={{
@@ -57,6 +81,10 @@ export const AppRouter = () => {
             <Route element={<AppLayout />}>
               <Route path="/" element={<DashboardPage />} />
               <Route path="/empresas" element={<EmpresasPage />} />
+              <Route path="/leads" element={<LeadsPage />} />
+              <Route path="/negocios" element={<PipelinePage />} />
+              <Route path="/contatos" element={<ContatosPage />} />
+              <Route path="/atividades" element={<AtividadesPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           </Route>
