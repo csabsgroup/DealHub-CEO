@@ -4,6 +4,7 @@ import { css } from '@linaria/core';
 import { styled } from '@linaria/react';
 import { Navigate, NavLink, Outlet } from 'react-router-dom';
 import {
+    IconBook2,
     IconBuildingSkyscraper,
     IconLayoutDashboard,
     IconLayoutKanban,
@@ -193,6 +194,7 @@ const NAV_ITEMS = [
   { to: '/contatos', label: 'Contatos', Icon: IconUsers, end: false },
   { to: '/negocios', label: 'Negócios', Icon: IconLayoutKanban, end: false },
   { to: '/atividades', label: 'Atividades', Icon: IconListCheck, end: false },
+  { to: '/catalogo', label: 'Catálogo', Icon: IconBook2, end: false },
   { to: '/configuracoes', label: 'Configurações', Icon: IconSettings, end: false },
 ] as const;
 
