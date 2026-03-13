@@ -1,11 +1,14 @@
+import { ConfirmDeleteModal } from '@/crm/components/ConfirmDeleteModal';
+import { EditarContatoModal } from '@/crm/components/EditarContatoModal';
 import { NovoContatoModal } from '@/crm/components/NovoContatoModal';
-import { useContatos } from '@/crm/hooks/useContatos';
+import { useContatos, useDeleteContato } from '@/crm/hooks/useContatos';
 import { useEmpresas } from '@/crm/hooks/useEmpresas';
 import { styled } from '@linaria/react';
-import { useMemo, useState } from 'react';
-import { IconPlus } from 'twenty-ui/display';
-import { Button } from 'twenty-ui/input';
+import { useCallback, useMemo, useState } from 'react';
+import { IconPencil, IconPlus, IconTrash } from 'twenty-ui/display';
+import { Button, IconButton } from 'twenty-ui/input';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
+import type { Contato } from '~/types/supabase';
 
 // --------------- Styled Components ---------------
 
@@ -133,13 +136,38 @@ const StyledLoadingState = styled.div`
   color: ${themeCssVariables.font.color.secondary};
 `;
 
+const StyledActionsCell = styled(StyledTd)`
+  width: 80px;
+  text-align: center;
+`;
+
+const StyledActionsRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${themeCssVariables.spacing[1]};
+  justify-content: center;
+`;
+
 // --------------- Component ---------------
 
 export const ContatosPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingContato, setEditingContato] = useState<Contato | null>(null);
+  const [deletingContato, setDeletingContato] = useState<Contato | null>(null);
 
   const { data: contatos, isLoading, isError } = useContatos();
   const { data: empresas } = useEmpresas();
+  const { mutateAsync: deleteContato, isPending: isDeleting } = useDeleteContato();
+
+  const handleDelete = useCallback(async () => {
+    if (!deletingContato) return;
+    try {
+      await deleteContato({ id: deletingContato.id });
+      setDeletingContato(null);
+    } catch {
+      // error handled by mutation
+    }
+  }, [deletingContato, deleteContato]);
 
   // Mapa empresa_id -> nome para exibição rápida
   const empresaMap = useMemo(() => {
@@ -202,6 +230,7 @@ export const ContatosPage = () => {
                   <StyledTh>Telefone</StyledTh>
                   <StyledTh>Cargo</StyledTh>
                   <StyledTh>Empresa</StyledTh>
+                  <StyledTh style={{ textAlign: 'center' }}>Ações</StyledTh>
                 </tr>
               </StyledTHead>
               <tbody>
@@ -245,6 +274,23 @@ export const ContatosPage = () => {
                         <StyledTdSecondary as="span">—</StyledTdSecondary>
                       )}
                     </StyledTd>
+                    <StyledActionsCell>
+                      <StyledActionsRow>
+                        <IconButton
+                          Icon={IconPencil}
+                          size="small"
+                          variant="tertiary"
+                          onClick={() => setEditingContato(contato)}
+                        />
+                        <IconButton
+                          Icon={IconTrash}
+                          size="small"
+                          variant="tertiary"
+                          accent="danger"
+                          onClick={() => setDeletingContato(contato)}
+                        />
+                      </StyledActionsRow>
+                    </StyledActionsCell>
                   </StyledTr>
                 ))}
               </tbody>
@@ -256,6 +302,23 @@ export const ContatosPage = () => {
       <NovoContatoModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+      />
+
+      {editingContato && (
+        <EditarContatoModal
+          isOpen={!!editingContato}
+          onClose={() => setEditingContato(null)}
+          initialData={editingContato}
+        />
+      )}
+
+      <ConfirmDeleteModal
+        isOpen={!!deletingContato}
+        onClose={() => setDeletingContato(null)}
+        onConfirm={handleDelete}
+        isPending={isDeleting}
+        entityName="contato"
+        entityLabel={deletingContato?.nome}
       />
     </StyledPageContainer>
   );

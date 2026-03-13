@@ -1,10 +1,13 @@
+import { ConfirmDeleteModal } from '@/crm/components/ConfirmDeleteModal';
+import { EditarPropostaModal } from '@/crm/components/EditarPropostaModal';
 import { NovaPropostaModal } from '@/crm/components/NovaPropostaModal';
-import { usePropostas } from '@/crm/hooks/usePropostas';
+import { useDeleteProposta, usePropostas } from '@/crm/hooks/usePropostas';
 import { styled } from '@linaria/react';
-import { useState } from 'react';
-import { IconPlus } from 'twenty-ui/display';
-import { Button } from 'twenty-ui/input';
+import { useCallback, useState } from 'react';
+import { IconPencil, IconPlus, IconTrash } from 'twenty-ui/display';
+import { Button, IconButton } from 'twenty-ui/input';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
+import type { Proposta } from '~/types/supabase';
 
 // --------------- Styled Components ---------------
 
@@ -158,6 +161,18 @@ const StyledLoadingState = styled.div`
   color: ${themeCssVariables.font.color.secondary};
 `;
 
+const StyledActionsCell = styled(StyledTd)`
+  width: 80px;
+  text-align: center;
+`;
+
+const StyledActionsRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${themeCssVariables.spacing[1]};
+  justify-content: center;
+`;
+
 // --------------- Helpers ---------------
 
 const formatCurrency = (value: number): string => {
@@ -193,8 +208,21 @@ const formatDate = (dateStr: string | null): string => {
 
 export const PropostasPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProposta, setEditingProposta] = useState<Proposta | null>(null);
+  const [deletingProposta, setDeletingProposta] = useState<Proposta | null>(null);
 
   const { data: propostas, isLoading, isError } = usePropostas();
+  const { mutateAsync: deleteProposta, isPending: isDeleting } = useDeleteProposta();
+
+  const handleDelete = useCallback(async () => {
+    if (!deletingProposta) return;
+    try {
+      await deleteProposta({ id: deletingProposta.id });
+      setDeletingProposta(null);
+    } catch {
+      // error handled by mutation
+    }
+  }, [deletingProposta, deleteProposta]);
 
   const renderContent = () => {
     if (isLoading) {
@@ -237,6 +265,7 @@ export const PropostasPage = () => {
               <StyledTh>Status</StyledTh>
               <StyledTh>Validade</StyledTh>
               <StyledTh>Criado em</StyledTh>
+              <StyledTh style={{ textAlign: 'center' }}>Ações</StyledTh>
             </tr>
           </StyledTHead>
           <tbody>
@@ -269,6 +298,23 @@ export const PropostasPage = () => {
                   <StyledTdSecondary>
                     {formatDate(proposta.created_at)}
                   </StyledTdSecondary>
+                  <StyledActionsCell>
+                    <StyledActionsRow>
+                      <IconButton
+                        Icon={IconPencil}
+                        size="small"
+                        variant="tertiary"
+                        onClick={() => setEditingProposta(proposta)}
+                      />
+                      <IconButton
+                        Icon={IconTrash}
+                        size="small"
+                        variant="tertiary"
+                        accent="danger"
+                        onClick={() => setDeletingProposta(proposta)}
+                      />
+                    </StyledActionsRow>
+                  </StyledActionsCell>
                 </StyledTr>
               );
             })}
@@ -297,6 +343,23 @@ export const PropostasPage = () => {
       <NovaPropostaModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+      />
+
+      {editingProposta && (
+        <EditarPropostaModal
+          isOpen={!!editingProposta}
+          onClose={() => setEditingProposta(null)}
+          initialData={editingProposta}
+        />
+      )}
+
+      <ConfirmDeleteModal
+        isOpen={!!deletingProposta}
+        onClose={() => setDeletingProposta(null)}
+        onConfirm={handleDelete}
+        isPending={isDeleting}
+        entityName="proposta"
+        entityLabel={deletingProposta?.numero}
       />
     </StyledPageContainer>
   );

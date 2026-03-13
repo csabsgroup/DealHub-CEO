@@ -1,9 +1,11 @@
+import { ConfirmDeleteModal } from '@/crm/components/ConfirmDeleteModal';
+import { EditarEmpresaModal } from '@/crm/components/EditarEmpresaModal';
 import { NovaEmpresaModal } from '@/crm/components/NovaEmpresaModal';
 import { useDeleteEmpresa, useEmpresas } from '@/crm/hooks/useEmpresas';
 import { styled } from '@linaria/react';
 import { useCallback, useState } from 'react';
-import { IconPlus } from 'twenty-ui/display';
-import { Button } from 'twenty-ui/input';
+import { IconPencil, IconPlus, IconTrash } from 'twenty-ui/display';
+import { Button, IconButton } from 'twenty-ui/input';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 import type { Empresa } from '~/types/supabase';
 

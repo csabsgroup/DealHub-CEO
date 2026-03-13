@@ -1,10 +1,13 @@
+import { ConfirmDeleteModal } from '@/crm/components/ConfirmDeleteModal';
+import { EditarAtividadeModal } from '@/crm/components/EditarAtividadeModal';
 import { NovaAtividadeModal } from '@/crm/components/NovaAtividadeModal';
-import { useAtividades } from '@/crm/hooks/useAtividades';
+import { useAtividades, useDeleteAtividade } from '@/crm/hooks/useAtividades';
 import { styled } from '@linaria/react';
-import { useState } from 'react';
-import { IconPlus } from 'twenty-ui/display';
-import { Button } from 'twenty-ui/input';
+import { useCallback, useState } from 'react';
+import { IconPencil, IconPlus, IconTrash } from 'twenty-ui/display';
+import { Button, IconButton } from 'twenty-ui/input';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
+import type { Atividade } from '~/types/supabase';
 
 // --------------- Styled Components ---------------
 
@@ -158,6 +161,18 @@ const StyledLoadingState = styled.div`
   color: ${themeCssVariables.font.color.secondary};
 `;
 
+const StyledActionsCell = styled(StyledTd)`
+  width: 80px;
+  text-align: center;
+`;
+
+const StyledActionsRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${themeCssVariables.spacing[1]};
+  justify-content: center;
+`;
+
 // --------------- Helpers ---------------
 
 const getTipoBadgeVariant = (
@@ -250,8 +265,21 @@ const getTipoEmoji = (tipo: string): string => {
 
 export const AtividadesPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingAtividade, setEditingAtividade] = useState<Atividade | null>(null);
+  const [deletingAtividade, setDeletingAtividade] = useState<Atividade | null>(null);
 
   const { data: atividades, isLoading, isError } = useAtividades();
+  const { mutateAsync: deleteAtividade, isPending: isDeleting } = useDeleteAtividade();
+
+  const handleDelete = useCallback(async () => {
+    if (!deletingAtividade) return;
+    try {
+      await deleteAtividade({ id: deletingAtividade.id });
+      setDeletingAtividade(null);
+    } catch {
+      // error handled by mutation
+    }
+  }, [deletingAtividade, deleteAtividade]);
 
   return (
     <StyledPageContainer>
@@ -305,6 +333,7 @@ export const AtividadesPage = () => {
                   <StyledTh>Status</StyledTh>
                   <StyledTh>Prioridade</StyledTh>
                   <StyledTh>Data</StyledTh>
+                  <StyledTh style={{ textAlign: 'center' }}>Ações</StyledTh>
                 </tr>
               </StyledTHead>
               <tbody>
@@ -350,6 +379,23 @@ export const AtividadesPage = () => {
                     <StyledTdSecondary>
                       {formatDate(atividade.data_inicio)}
                     </StyledTdSecondary>
+                    <StyledActionsCell>
+                      <StyledActionsRow>
+                        <IconButton
+                          Icon={IconPencil}
+                          size="small"
+                          variant="tertiary"
+                          onClick={() => setEditingAtividade(atividade)}
+                        />
+                        <IconButton
+                          Icon={IconTrash}
+                          size="small"
+                          variant="tertiary"
+                          accent="danger"
+                          onClick={() => setDeletingAtividade(atividade)}
+                        />
+                      </StyledActionsRow>
+                    </StyledActionsCell>
                   </StyledTr>
                 ))}
               </tbody>
@@ -361,6 +407,23 @@ export const AtividadesPage = () => {
       <NovaAtividadeModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+      />
+
+      {editingAtividade && (
+        <EditarAtividadeModal
+          isOpen={!!editingAtividade}
+          onClose={() => setEditingAtividade(null)}
+          initialData={editingAtividade}
+        />
+      )}
+
+      <ConfirmDeleteModal
+        isOpen={!!deletingAtividade}
+        onClose={() => setDeletingAtividade(null)}
+        onConfirm={handleDelete}
+        isPending={isDeleting}
+        entityName="atividade"
+        entityLabel={deletingAtividade?.titulo}
       />
     </StyledPageContainer>
   );
