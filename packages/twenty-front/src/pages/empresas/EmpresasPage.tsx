@@ -1,10 +1,11 @@
 import { NovaEmpresaModal } from '@/crm/components/NovaEmpresaModal';
-import { useEmpresas } from '@/crm/hooks/useEmpresas';
+import { useDeleteEmpresa, useEmpresas } from '@/crm/hooks/useEmpresas';
 import { styled } from '@linaria/react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { IconPlus } from 'twenty-ui/display';
 import { Button } from 'twenty-ui/input';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
+import type { Empresa } from '~/types/supabase';
 
 // --------------- Styled Components ---------------
 
@@ -132,6 +133,18 @@ const StyledLoadingState = styled.div`
   color: ${themeCssVariables.font.color.secondary};
 `;
 
+const StyledActionsCell = styled(StyledTd)`
+  width: 80px;
+  text-align: center;
+`;
+
+const StyledActionsRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${themeCssVariables.spacing[1]};
+  justify-content: center;
+`;
+
 // --------------- Helpers ---------------
 
 const formatCNPJ = (cnpj: string | null): string => {
@@ -157,8 +170,22 @@ const formatFaturamento = (value: number | null): string => {
 
 export const EmpresasPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingEmpresa, setEditingEmpresa] = useState<Empresa | null>(null);
+  const [deletingEmpresa, setDeletingEmpresa] = useState<Empresa | null>(null);
 
   const { data: empresas, isLoading, isError } = useEmpresas();
+  const { mutateAsync: deleteEmpresa, isPending: isDeleting } =
+    useDeleteEmpresa();
+
+  const handleDelete = useCallback(async () => {
+    if (!deletingEmpresa) return;
+    try {
+      await deleteEmpresa({ id: deletingEmpresa.id });
+      setDeletingEmpresa(null);
+    } catch {
+      // error handled by mutation
+    }
+  }, [deletingEmpresa, deleteEmpresa]);
 
   return (
     <StyledPageContainer>
@@ -211,6 +238,7 @@ export const EmpresasPage = () => {
                   <StyledTh>CNPJ</StyledTh>
                   <StyledTh>Regime Tributário</StyledTh>
                   <StyledTh>Faturamento Estimado</StyledTh>
+                  <StyledTh style={{ textAlign: 'center' }}>Ações</StyledTh>
                 </tr>
               </StyledTHead>
               <tbody>
@@ -245,6 +273,23 @@ export const EmpresasPage = () => {
                     <StyledTdSecondary>
                       {formatFaturamento(empresa.faturamento_estimado)}
                     </StyledTdSecondary>
+                    <StyledActionsCell>
+                      <StyledActionsRow>
+                        <IconButton
+                          Icon={IconPencil}
+                          size="small"
+                          variant="tertiary"
+                          onClick={() => setEditingEmpresa(empresa)}
+                        />
+                        <IconButton
+                          Icon={IconTrash}
+                          size="small"
+                          variant="tertiary"
+                          accent="danger"
+                          onClick={() => setDeletingEmpresa(empresa)}
+                        />
+                      </StyledActionsRow>
+                    </StyledActionsCell>
                   </StyledTr>
                 ))}
               </tbody>
@@ -256,6 +301,23 @@ export const EmpresasPage = () => {
       <NovaEmpresaModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+      />
+
+      {editingEmpresa && (
+        <EditarEmpresaModal
+          isOpen={!!editingEmpresa}
+          onClose={() => setEditingEmpresa(null)}
+          initialData={editingEmpresa}
+        />
+      )}
+
+      <ConfirmDeleteModal
+        isOpen={!!deletingEmpresa}
+        onClose={() => setDeletingEmpresa(null)}
+        onConfirm={handleDelete}
+        isPending={isDeleting}
+        entityName="empresa"
+        entityLabel={deletingEmpresa?.razao_social}
       />
     </StyledPageContainer>
   );

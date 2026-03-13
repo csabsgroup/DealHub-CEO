@@ -1,10 +1,13 @@
+import { ConfirmDeleteModal } from '@/crm/components/ConfirmDeleteModal';
+import { EditarLeadModal } from '@/crm/components/EditarLeadModal';
 import { NovoLeadModal } from '@/crm/components/NovoLeadModal';
-import { useLeads, useOrigensLead } from '@/crm/hooks/useLeads';
+import { useDeleteLead, useLeads, useOrigensLead } from '@/crm/hooks/useLeads';
 import { styled } from '@linaria/react';
-import { useState } from 'react';
-import { IconPlus } from 'twenty-ui/display';
-import { Button } from 'twenty-ui/input';
+import { useCallback, useState } from 'react';
+import { IconPencil, IconPlus, IconTrash } from 'twenty-ui/display';
+import { Button, IconButton } from 'twenty-ui/input';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
+import type { Lead } from '~/types/supabase';
 
 // --------------- Styled Components ---------------
 
@@ -176,6 +179,18 @@ const StyledLoadingState = styled.div`
   color: ${themeCssVariables.font.color.secondary};
 `;
 
+const StyledActionsCell = styled(StyledTd)`
+  width: 80px;
+  text-align: center;
+`;
+
+const StyledActionsRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${themeCssVariables.spacing[1]};
+  justify-content: center;
+`;
+
 // --------------- Helpers ---------------
 
 const getStatusBadgeVariant = (
@@ -214,9 +229,22 @@ const getTemperaturaEmoji = (temp: string | null): string => {
 
 export const LeadsPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingLead, setEditingLead] = useState<Lead | null>(null);
+  const [deletingLead, setDeletingLead] = useState<Lead | null>(null);
 
   const { data: leads, isLoading, isError } = useLeads();
   const { data: _origens } = useOrigensLead();
+  const { mutateAsync: deleteLead, isPending: isDeleting } = useDeleteLead();
+
+  const handleDelete = useCallback(async () => {
+    if (!deletingLead) return;
+    try {
+      await deleteLead({ id: deletingLead.id });
+      setDeletingLead(null);
+    } catch {
+      // error handled by mutation
+    }
+  }, [deletingLead, deleteLead]);
 
   return (
     <StyledPageContainer>
@@ -272,6 +300,7 @@ export const LeadsPage = () => {
                   <StyledTh>Origem</StyledTh>
                   <StyledTh>Temperatura</StyledTh>
                   <StyledTh>Status</StyledTh>
+                  <StyledTh style={{ textAlign: 'center' }}>Ações</StyledTh>
                 </tr>
               </StyledTHead>
               <tbody>
@@ -321,6 +350,23 @@ export const LeadsPage = () => {
                         {lead.status_triagem}
                       </StyledBadge>
                     </StyledTd>
+                    <StyledActionsCell>
+                      <StyledActionsRow>
+                        <IconButton
+                          Icon={IconPencil}
+                          size="small"
+                          variant="tertiary"
+                          onClick={() => setEditingLead(lead)}
+                        />
+                        <IconButton
+                          Icon={IconTrash}
+                          size="small"
+                          variant="tertiary"
+                          accent="danger"
+                          onClick={() => setDeletingLead(lead)}
+                        />
+                      </StyledActionsRow>
+                    </StyledActionsCell>
                   </StyledTr>
                 ))}
               </tbody>
@@ -332,6 +378,23 @@ export const LeadsPage = () => {
       <NovoLeadModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+      />
+
+      {editingLead && (
+        <EditarLeadModal
+          isOpen={!!editingLead}
+          onClose={() => setEditingLead(null)}
+          initialData={editingLead}
+        />
+      )}
+
+      <ConfirmDeleteModal
+        isOpen={!!deletingLead}
+        onClose={() => setDeletingLead(null)}
+        onConfirm={handleDelete}
+        isPending={isDeleting}
+        entityName="lead"
+        entityLabel={deletingLead?.nome}
       />
     </StyledPageContainer>
   );

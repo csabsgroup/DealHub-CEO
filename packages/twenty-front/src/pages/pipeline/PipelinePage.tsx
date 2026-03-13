@@ -1,10 +1,12 @@
+import { ConfirmDeleteModal } from '@/crm/components/ConfirmDeleteModal';
+import { EditarNegocioModal } from '@/crm/components/EditarNegocioModal';
 import { NovoNegocioModal } from '@/crm/components/NovoNegocioModal';
-import { useNegociosByPipeline } from '@/crm/hooks/useNegocios';
+import { useDeleteNegocio, useNegociosByPipeline } from '@/crm/hooks/useNegocios';
 import { usePipelineEtapas, usePipelines } from '@/crm/hooks/usePipelines';
 import { styled } from '@linaria/react';
-import { useMemo, useState } from 'react';
-import { IconPlus } from 'twenty-ui/display';
-import { Button } from 'twenty-ui/input';
+import { useCallback, useMemo, useState } from 'react';
+import { IconPencil, IconPlus, IconTrash } from 'twenty-ui/display';
+import { Button, IconButton } from 'twenty-ui/input';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 import type { Negocio, PipelineEtapa } from '~/types/supabase';
 
@@ -133,11 +135,30 @@ const StyledCard = styled.div`
   padding: ${themeCssVariables.spacing[3]};
   cursor: pointer;
   transition: box-shadow 0.15s ease, border-color 0.15s ease;
+  position: relative;
 
   &:hover {
     border-color: ${themeCssVariables.border.color.medium};
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   }
+
+  &:hover .card-actions {
+    opacity: 1;
+  }
+`;
+
+const StyledCardActions = styled.div`
+  position: absolute;
+  top: ${themeCssVariables.spacing[2]};
+  right: ${themeCssVariables.spacing[2]};
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  background: ${themeCssVariables.background.primary};
+  border-radius: ${themeCssVariables.border.radius.sm};
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  padding: 2px;
 `;
 
 const StyledCardTitle = styled.div`
@@ -265,8 +286,24 @@ export const PipelinePage = () => {
   const [selectedPipelineId, setSelectedPipelineId] = useState<string | null>(
     null,
   );
+  const [editingNegocio, setEditingNegocio] =
+    useState<NegocioWithRelations | null>(null);
+  const [deletingNegocio, setDeletingNegocio] =
+    useState<NegocioWithRelations | null>(null);
 
   const { data: pipelines, isLoading: loadingPipelines } = usePipelines();
+  const { mutateAsync: deleteNegocio, isPending: isDeleting } =
+    useDeleteNegocio();
+
+  const handleDelete = useCallback(async () => {
+    if (!deletingNegocio) return;
+    try {
+      await deleteNegocio({ id: deletingNegocio.id });
+      setDeletingNegocio(null);
+    } catch {
+      // error handled by mutation
+    }
+  }, [deletingNegocio, deleteNegocio]);
 
   // Auto-select default pipeline
   const activePipelineId = useMemo(() => {
@@ -364,6 +401,27 @@ export const PipelinePage = () => {
                   )}
                   {columnNegocios.map((negocio) => (
                     <StyledCard key={negocio.id}>
+                      <StyledCardActions className="card-actions">
+                        <IconButton
+                          Icon={IconPencil}
+                          size="small"
+                          variant="tertiary"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingNegocio(negocio);
+                          }}
+                        />
+                        <IconButton
+                          Icon={IconTrash}
+                          size="small"
+                          variant="tertiary"
+                          accent="danger"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeletingNegocio(negocio);
+                          }}
+                        />
+                      </StyledCardActions>
                       <StyledCardTitle>{negocio.titulo}</StyledCardTitle>
                       <StyledCardMeta>
                         {negocio.empresas && (
@@ -400,6 +458,23 @@ export const PipelinePage = () => {
       <NovoNegocioModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+      />
+
+      {editingNegocio && (
+        <EditarNegocioModal
+          isOpen={!!editingNegocio}
+          onClose={() => setEditingNegocio(null)}
+          initialData={editingNegocio}
+        />
+      )}
+
+      <ConfirmDeleteModal
+        isOpen={!!deletingNegocio}
+        onClose={() => setDeletingNegocio(null)}
+        onConfirm={handleDelete}
+        isPending={isDeleting}
+        entityName="negócio"
+        entityLabel={deletingNegocio?.titulo}
       />
     </StyledPageContainer>
   );
