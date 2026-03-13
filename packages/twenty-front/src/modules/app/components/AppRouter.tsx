@@ -1,3 +1,4 @@
+import { AppLayout } from '@/app/components/AppLayout';
 import { ProtectedRoute } from '@/auth/components/ProtectedRoute';
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
@@ -17,6 +18,12 @@ const CreateTenantPage = lazy(() =>
 const DashboardPage = lazy(() =>
   import('~/pages/dashboard/DashboardPage').then((m) => ({
     default: m.DashboardPage,
+  })),
+);
+
+const EmpresasPage = lazy(() =>
+  import('~/pages/empresas/EmpresasPage').then((m) => ({
+    default: m.EmpresasPage,
   })),
 );
 
@@ -43,9 +50,15 @@ export const AppRouter = () => {
 
           {/* Rotas protegidas (requer sessão ativa) */}
           <Route element={<ProtectedRoute />}>
+            {/* Criar escritório (sem sidebar — usuário ainda não tem tenant) */}
             <Route path="/create-tenant" element={<CreateTenantPage />} />
-            <Route path="/" element={<DashboardPage />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
+
+            {/* App principal com sidebar */}
+            <Route element={<AppLayout />}>
+              <Route path="/" element={<DashboardPage />} />
+              <Route path="/empresas" element={<EmpresasPage />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Route>
           </Route>
         </Routes>
       </Suspense>

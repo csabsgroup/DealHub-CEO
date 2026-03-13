@@ -30,7 +30,22 @@ export const CreateTenantPage = () => {
         { p_name: name, p_cnpj: cnpj || null },
       );
 
-      if (rpcError) throw new Error(rpcError.message);
+      if (rpcError) {
+        // Se o CNPJ já existe, tenta vincular ao tenant existente
+        if (rpcError.message.includes('tenants_cnpj_key')) {
+          const { data: linkData, error: linkError } = await supabase.rpc(
+            'link_user_to_existing_tenant',
+            { p_cnpj: cnpj },
+          );
+
+          if (linkError) throw new Error(linkError.message);
+
+          await setActiveTenant(linkData.tenant_id);
+          navigate('/');
+          return;
+        }
+        throw new Error(rpcError.message);
+      }
 
       await setActiveTenant(data.id);
       navigate('/');

@@ -5,12 +5,6 @@ export const DashboardPage = () => {
   const { profile, activeTenant, userTenant, signOut } = useAuthContext();
   const navigate = useNavigate();
 
-  // Se o usuário não tem tenant, redireciona para criação
-  if (!activeTenant) {
-    navigate('/create-tenant', { replace: true });
-    return null;
-  }
-
   const handleSignOut = async () => {
     await signOut();
     navigate('/auth', { replace: true });

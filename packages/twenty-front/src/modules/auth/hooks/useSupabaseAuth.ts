@@ -34,6 +34,8 @@ export const useSupabaseAuth = () => {
 
   // Carrega os tenants do usuário
   const loadUserTenants = useCallback(async (userId: string) => {
+    console.log('[Auth] loadUserTenants chamado para userId:', userId);
+
     const { data, error } = await supabase
       .from('user_tenants')
       .select('*, tenants(*)')
@@ -41,10 +43,12 @@ export const useSupabaseAuth = () => {
       .eq('is_active', true);
 
     if (error) {
-      console.error('Erro ao carregar tenants:', error.message);
+      console.error('[Auth] Erro ao carregar tenants:', error.message, error);
       return [];
     }
-    return data;
+
+    console.log('[Auth] user_tenants encontrados:', data?.length ?? 0, data);
+    return data ?? [];
   }, []);
 
   // Define o tenant ativo
@@ -89,12 +93,16 @@ export const useSupabaseAuth = () => {
   const loadUserData = useCallback(
     async (currentSession: Session) => {
       const userId = currentSession.user.id;
+      console.log('[Auth] loadUserData iniciado para userId:', userId);
+      console.log('[Auth] Email do usuário:', currentSession.user.email);
       setUser(currentSession.user);
 
       const userProfile = await loadProfile(userId);
       setProfile(userProfile);
+      console.log('[Auth] Profile carregado:', userProfile ? 'sim' : 'não');
 
       const userTenantsData = await loadUserTenants(userId);
+      console.log('[Auth] Tenants retornados:', userTenantsData.length);
 
       if (userTenantsData.length > 0) {
         // Tenta recuperar o tenant ativo do localStorage
