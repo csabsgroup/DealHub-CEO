@@ -4,6 +4,7 @@ import { NovaEmpresaModal } from '@/crm/components/NovaEmpresaModal';
 import { useDeleteEmpresa, useEmpresas } from '@/crm/hooks/useEmpresas';
 import { styled } from '@linaria/react';
 import { useCallback, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { IconPencil, IconPlus, IconTrash } from 'twenty-ui/display';
 import { Button, IconButton } from 'twenty-ui/input';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
@@ -103,6 +104,18 @@ const StyledBadge = styled.span<{ regime?: string }>`
   white-space: nowrap;
 `;
 
+const StyledCompanyLink = styled.span`
+  color: ${themeCssVariables.font.color.primary};
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: ${themeCssVariables.accent.primary};
+    text-decoration: underline;
+  }
+`;
+
 const StyledEmptyState = styled.div`
   display: flex;
   flex-direction: column;
@@ -175,6 +188,7 @@ export const EmpresasPage = () => {
   const [editingEmpresa, setEditingEmpresa] = useState<Empresa | null>(null);
   const [deletingEmpresa, setDeletingEmpresa] = useState<Empresa | null>(null);
 
+  const navigate = useNavigate();
   const { data: empresas, isLoading, isError } = useEmpresas();
   const { mutateAsync: deleteEmpresa, isPending: isDeleting } =
     useDeleteEmpresa();
@@ -248,7 +262,11 @@ export const EmpresasPage = () => {
                   <StyledTr key={empresa.id}>
                     <StyledTd>
                       <div>
-                        <span>{empresa.razao_social}</span>
+                        <StyledCompanyLink
+                          onClick={() => navigate(`/empresas/${empresa.id}`)}
+                        >
+                          {empresa.razao_social}
+                        </StyledCompanyLink>
                         {empresa.nome_fantasia && (
                           <div
                             style={{

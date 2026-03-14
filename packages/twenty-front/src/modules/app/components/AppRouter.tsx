@@ -27,6 +27,12 @@ const EmpresasPage = lazy(() =>
   })),
 );
 
+const EmpresaDetalhesPage = lazy(() =>
+  import('~/pages/empresas/EmpresaDetalhesPage').then((m) => ({
+    default: m.EmpresaDetalhesPage,
+  })),
+);
+
 const LeadsPage = lazy(() =>
   import('~/pages/leads/LeadsPage').then((m) => ({
     default: m.LeadsPage,
@@ -93,6 +99,7 @@ export const AppRouter = () => {
             <Route element={<AppLayout />}>
               <Route path="/" element={<DashboardPage />} />
               <Route path="/empresas" element={<EmpresasPage />} />
+              <Route path="/empresas/:id" element={<EmpresaDetalhesPage />} />
               <Route path="/leads" element={<LeadsPage />} />
               <Route path="/negocios" element={<PipelinePage />} />
               <Route path="/contatos" element={<ContatosPage />} />
