@@ -513,27 +513,52 @@ export type PropostaItemInsert = Omit<
 };
 
 // ===================== CONTRATOS =====================
+// Campos conforme PRD_V2.md Seção 9.12
 
-export type ContratoStatus = 'Minuta' | 'Enviado' | 'Assinado' | 'Cancelado';
+export type ContratoStatus =
+  | 'Rascunho'
+  | 'enviado'
+  | 'assinado parcial'
+  | 'assinado'
+  | 'recusado'
+  | 'expirado'
+  | 'cancelado';
+
+export type IndiceReajuste = 'IPCA' | 'IGPM' | 'INPC' | 'Custom';
+
+export type PeriodicidadeReajuste = 'Mensal' | 'Trimestral' | 'Semestral' | 'Anual' | 'Custom';
 
 export type Contrato = {
+  // Identidade
   id: string;
   tenant_id: string;
-  empresa_id: string;
-  proposta_id: string | null;
-  numero: string;
-  status: ContratoStatus;
-  data_inicio: string | null;
-  data_fim: string | null;
-  valor_mensalidade: number;
-  valor_setup: number;
-  indice_reajuste: string | null;
-  periodicidade_reajuste: string | null;
-  clausulas: string | null;
-  assinado_por: string | null;
-  data_assinatura: string | null;
-  responsavel_id: string | null;
+  // Relações (PRD_V2 §9.12)
+  deal_id: string;
+  proposal_id: string | null;
+  template_id: string | null;
+  // Status obrigatório
+  status_contrato: ContratoStatus;
+  // Vigência
+  inicio_vigencia: string | null;
+  fim_vigencia: string | null;
+  // Reajuste
+  indice_reajuste: IndiceReajuste | string | null;
+  periodicidade_reajuste: PeriodicidadeReajuste | string | null;
+  // Assinatura digital
+  assinatura_provider: string | null;
+  link_assinatura: string | null;
+  enviado_em: string | null;
+  assinado_em: string | null;
+  arquivo_final: string | null;
+  // Texto livre
   observacoes: string | null;
+  // Colunas legadas mantidas para compatibilidade com migration 00015
+  empresa_id: string | null;
+  proposta_id: string | null;
+  numero: string | null;
+  valor_mensalidade: number | null;
+  valor_setup: number | null;
+  responsavel_id: string | null;
   tags: string[];
   created_by: string | null;
   created_at: string;
@@ -541,10 +566,21 @@ export type Contrato = {
   deleted_at: string | null;
 };
 
-export type ContratoInsert = Omit<
-  Contrato,
-  'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'deleted_at'
-> & {
+export type ContratoInsert = {
+  deal_id: string;
+  status_contrato: ContratoStatus;
+  proposal_id?: string | null;
+  template_id?: string | null;
+  inicio_vigencia?: string | null;
+  fim_vigencia?: string | null;
+  indice_reajuste?: string | null;
+  periodicidade_reajuste?: string | null;
+  assinatura_provider?: string | null;
+  link_assinatura?: string | null;
+  enviado_em?: string | null;
+  assinado_em?: string | null;
+  arquivo_final?: string | null;
+  observacoes?: string | null;
   id?: string;
   deleted_at?: string | null;
 };

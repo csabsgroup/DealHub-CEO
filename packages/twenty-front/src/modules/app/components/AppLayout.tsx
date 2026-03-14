@@ -6,14 +6,15 @@ import { Navigate, NavLink, Outlet } from 'react-router-dom';
 import {
     IconBook2,
     IconBuildingSkyscraper,
-    IconFileInvoice,
+    IconFileCheck,
+    IconFileText,
     IconLayoutDashboard,
     IconLayoutKanban,
     IconListCheck,
     IconLogout,
     IconSettings,
     IconTarget,
-    IconUsers,
+    IconUsers
 } from 'twenty-ui/display';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 
@@ -194,7 +195,8 @@ const NAV_ITEMS = [
   },
   { to: '/contatos', label: 'Contatos', Icon: IconUsers, end: false },
   { to: '/negocios', label: 'Negócios', Icon: IconLayoutKanban, end: false },
-  { to: '/propostas', label: 'Propostas', Icon: IconFileInvoice, end: false },
+  { to: '/propostas', label: 'Propostas', Icon: IconFileText, end: false },
+  { to: '/contratos', label: 'Contratos', Icon: IconFileCheck, end: false },
   { to: '/atividades', label: 'Atividades', Icon: IconListCheck, end: false },
   { to: '/catalogo', label: 'Catálogo', Icon: IconBook2, end: false },
   { to: '/configuracoes', label: 'Configurações', Icon: IconSettings, end: false },

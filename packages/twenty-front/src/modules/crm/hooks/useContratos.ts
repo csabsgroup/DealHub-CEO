@@ -1,22 +1,22 @@
 import { useSupabaseMutation } from '~/hooks/useSupabaseMutation';
 import { useSupabaseQuery } from '~/hooks/useSupabaseQuery';
 import type {
-  Contrato,
-  ContratoInsert,
-  ContratoStatus,
-  ContratoUpdate,
+    Contrato,
+    ContratoInsert,
+    ContratoStatus,
+    ContratoUpdate,
 } from '~/types/supabase';
 
 const TABLE = 'contratos';
 
-// Contratos com joins nas entidades relacionadas
+// Contratos com joins nas entidades relacionadas (PRD_V2 §9.12)
 const COLUMNS_WITH_RELATIONS =
-  '*, empresas(razao_social, nome_fantasia), propostas(numero, valor_total)';
+  '*, negocios(id, titulo, empresa_id), propostas(id, numero, valor_total)';
 
 // Lista contratos com filtros
 export const useContratos = (options?: {
-  empresaId?: string;
-  propostaId?: string;
+  dealId?: string;
+  proposalId?: string;
   status?: ContratoStatus;
   search?: string;
   limit?: number;
@@ -24,32 +24,25 @@ export const useContratos = (options?: {
 }) => {
   const filters = [];
 
-  if (options?.empresaId) {
+  if (options?.dealId) {
     filters.push({
-      column: 'empresa_id',
+      column: 'deal_id',
       operator: 'eq' as const,
-      value: options.empresaId,
+      value: options.dealId,
     });
   }
-  if (options?.propostaId) {
+  if (options?.proposalId) {
     filters.push({
-      column: 'proposta_id',
+      column: 'proposal_id',
       operator: 'eq' as const,
-      value: options.propostaId,
+      value: options.proposalId,
     });
   }
   if (options?.status) {
     filters.push({
-      column: 'status',
+      column: 'status_contrato',
       operator: 'eq' as const,
       value: options.status,
-    });
-  }
-  if (options?.search) {
-    filters.push({
-      column: 'numero',
-      operator: 'ilike' as const,
-      value: `%${options.search}%`,
     });
   }
 
@@ -64,15 +57,15 @@ export const useContratos = (options?: {
   });
 };
 
-// Contratos de uma empresa específica
-export const useContratosByEmpresa = (empresaId: string | null) => {
+// Contratos de um negócio específico
+export const useContratosByDeal = (dealId: string | null) => {
   return useSupabaseQuery<Contrato[]>({
     table: TABLE,
     columns: COLUMNS_WITH_RELATIONS,
-    filters: [{ column: 'empresa_id', operator: 'eq', value: empresaId }],
+    filters: [{ column: 'deal_id', operator: 'eq', value: dealId }],
     order: [{ column: 'created_at', ascending: false }],
-    enabled: !!empresaId,
-    queryKeyExtra: ['byEmpresa', empresaId],
+    enabled: !!dealId,
+    queryKeyExtra: ['byDeal', dealId],
   });
 };
 
@@ -93,7 +86,7 @@ export const useCreateContrato = () => {
   return useSupabaseMutation<ContratoInsert, Contrato>({
     table: TABLE,
     type: 'insert',
-    invalidateKeys: ['empresas'],
+    invalidateKeys: [TABLE],
   });
 };
 

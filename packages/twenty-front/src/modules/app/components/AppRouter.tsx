@@ -69,6 +69,12 @@ const PropostasPage = lazy(() =>
   })),
 );
 
+const ContratosPage = lazy(() =>
+  import('~/pages/contratos/ContratosPage').then((m) => ({
+    default: m.ContratosPage,
+  })),
+);
+
 const Loading = () => (
   <div
     style={{
@@ -106,6 +112,7 @@ export const AppRouter = () => {
               <Route path="/atividades" element={<AtividadesPage />} />
               <Route path="/catalogo" element={<CatalogoPage />} />
               <Route path="/propostas" element={<PropostasPage />} />
+              <Route path="/contratos" element={<ContratosPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           </Route>
