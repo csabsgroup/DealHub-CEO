@@ -1,19 +1,18 @@
+import { useAtividades } from '@/crm/hooks/useAtividades';
 import { useContatosByEmpresa } from '@/crm/hooks/useContatos';
 import { useEmpresa } from '@/crm/hooks/useEmpresas';
 import { useNegociosByEmpresa } from '@/crm/hooks/useNegocios';
-import { useAtividades } from '@/crm/hooks/useAtividades';
 import { usePropostas } from '@/crm/hooks/usePropostas';
 import { styled } from '@linaria/react';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
-  IconArrowLeft,
-  IconBriefcase,
-  IconBuilding,
-  IconCalendar,
-  IconCheck,
-  IconTag,
-  IconUser,
+    IconArrowLeft,
+    IconBriefcase,
+    IconCalendar,
+    IconCheck,
+    IconTag,
+    IconUser
 } from 'twenty-ui/display';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 import type { Negocio, Proposta } from '~/types/supabase';
@@ -358,7 +357,6 @@ export const EmpresaDetalhesPage = () => {
           )}
           {empresa.cnpj && (
             <StyledBadge>
-              <IconBuilding size={11} />
               {formatCNPJ(empresa.cnpj)}
             </StyledBadge>
           )}
