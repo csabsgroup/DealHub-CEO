@@ -45,6 +45,12 @@ const PipelinePage = lazy(() =>
   })),
 );
 
+const NegocioDetalhesPage = lazy(() =>
+  import('~/pages/negocios/NegocioDetalhesPage').then((m) => ({
+    default: m.NegocioDetalhesPage,
+  })),
+);
+
 const ContatosPage = lazy(() =>
   import('~/pages/contatos/ContatosPage').then((m) => ({
     default: m.ContatosPage,
@@ -108,6 +114,7 @@ export const AppRouter = () => {
               <Route path="/empresas/:id" element={<EmpresaDetalhesPage />} />
               <Route path="/leads" element={<LeadsPage />} />
               <Route path="/negocios" element={<PipelinePage />} />
+              <Route path="/negocios/:id" element={<NegocioDetalhesPage />} />
               <Route path="/contatos" element={<ContatosPage />} />
               <Route path="/atividades" element={<AtividadesPage />} />
               <Route path="/catalogo" element={<CatalogoPage />} />

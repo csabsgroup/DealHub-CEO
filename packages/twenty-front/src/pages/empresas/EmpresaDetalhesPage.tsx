@@ -1,5 +1,6 @@
 import { useAtividades } from '@/crm/hooks/useAtividades';
 import { useContatosByEmpresa } from '@/crm/hooks/useContatos';
+import { useContratos } from '@/crm/hooks/useContratos';
 import { useEmpresa } from '@/crm/hooks/useEmpresas';
 import { useNegociosByEmpresa } from '@/crm/hooks/useNegocios';
 import { usePropostas } from '@/crm/hooks/usePropostas';
@@ -15,7 +16,7 @@ import {
     IconUser
 } from 'twenty-ui/display';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
-import type { Negocio, Proposta } from '~/types/supabase';
+import type { Contrato, Negocio, Proposta } from '~/types/supabase';
 
 // ─── Extended types for Supabase joined data ─────────────────────────────────
 
@@ -26,6 +27,10 @@ type NegocioComRelacoes = Negocio & {
 
 type PropostaComRelacoes = Proposta & {
   negocios?: { titulo: string; empresa_id: string | null; valor_estimado: number };
+};
+
+type ContratoComRelacoes = Contrato & {
+  negocios?: { id: string; titulo: string; empresa_id: string | null } | null;
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -289,9 +294,26 @@ const StyledLoadingState = styled.div`
   color: ${themeCssVariables.font.color.secondary};
 `;
 
+const StyledNegocioLink = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: ${themeCssVariables.font.size.sm};
+  font-weight: 500;
+  color: ${themeCssVariables.accent.primary};
+  text-align: left;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+  }
+`;
+
 // ─── Tab type ────────────────────────────────────────────────────────────────
 
-type TabId = 'contatos' | 'negocios' | 'atividades';
+type TabId = 'contatos' | 'negocios' | 'atividades' | 'contratos';
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -309,10 +331,16 @@ export const EmpresaDetalhesPage = () => {
     empresaId ? { empresaId } : undefined,
   );
   const { data: todasPropostas } = usePropostas();
+  const { data: todosContratos } = useContratos();
 
   // Filter propostas for this empresa via the negocios join (empresa_id is available via JOIN)
   const propostas = ((todasPropostas as PropostaComRelacoes[] | undefined) ?? []).filter(
     (p) => p.negocios?.empresa_id === id,
+  );
+
+  // Filter contratos via negocios join (same pattern as propostas)
+  const contratos = ((todosContratos as ContratoComRelacoes[] | undefined) ?? []).filter(
+    (c) => c.negocios?.empresa_id === id,
   );
 
   const negociosComRelacoes = (negocios ?? []) as NegocioComRelacoes[];
@@ -398,6 +426,11 @@ export const EmpresaDetalhesPage = () => {
             <StyledStatNumber>{propostas.length}</StyledStatNumber>
             &nbsp;proposta{propostas.length !== 1 ? 's' : ''}
           </StyledStat>
+          <StyledStat>
+            <IconCheck size={14} />
+            <StyledStatNumber>{contratos.length}</StyledStatNumber>
+            &nbsp;contrato{contratos.length !== 1 ? 's' : ''}
+          </StyledStat>
         </StyledStatsRow>
       </StyledHeader>
 
@@ -420,6 +453,12 @@ export const EmpresaDetalhesPage = () => {
           onClick={() => setActiveTab('atividades')}
         >
           Atividades{atividades ? ` (${atividades.length})` : ''}
+        </StyledTab>
+        <StyledTab
+          data-active={activeTab === 'contratos' ? 'true' : 'false'}
+          onClick={() => setActiveTab('contratos')}
+        >
+          Contratos{contratos.length > 0 ? ` (${contratos.length})` : ''}
         </StyledTab>
       </StyledTabBar>
 
@@ -503,7 +542,11 @@ export const EmpresaDetalhesPage = () => {
                     <tbody>
                       {negociosComRelacoes.map((n) => (
                         <StyledTr key={n.id}>
-                          <StyledTd>{n.titulo}</StyledTd>
+                          <StyledTd>
+                            <StyledNegocioLink onClick={() => navigate(`/negocios/${n.id}`)}>
+                              {n.titulo}
+                            </StyledNegocioLink>
+                          </StyledTd>
                           <StyledTdSecondary>
                             {formatCurrency(n.valor_estimado)}
                           </StyledTdSecondary>
@@ -616,6 +659,51 @@ export const EmpresaDetalhesPage = () => {
                           <StyledStatusBadge>{a.status}</StyledStatusBadge>
                         </StyledTd>
                         <StyledTdSecondary>{a.prioridade}</StyledTdSecondary>
+                      </StyledTr>
+                    ))}
+                  </tbody>
+                </StyledTable>
+              </StyledTableWrapper>
+            )}
+          </>
+        )}
+
+        {/* ── TAB 4: CONTRATOS ── */}
+        {activeTab === 'contratos' && (
+          <>
+            {contratos.length === 0 && (
+              <StyledEmptyState>
+                Nenhum contrato vinculado a esta empresa.
+              </StyledEmptyState>
+            )}
+            {contratos.length > 0 && (
+              <StyledTableWrapper>
+                <StyledTable>
+                  <StyledTHead>
+                    <tr>
+                      <StyledTh>Status</StyledTh>
+                      <StyledTh>Negócio</StyledTh>
+                      <StyledTh>Início Vigência</StyledTh>
+                      <StyledTh>Fim Vigência</StyledTh>
+                      <StyledTh>Índice Reajuste</StyledTh>
+                    </tr>
+                  </StyledTHead>
+                  <tbody>
+                    {contratos.map((c) => (
+                      <StyledTr key={c.id}>
+                        <StyledTd>
+                          <StyledStatusBadge>{c.status_contrato}</StyledStatusBadge>
+                        </StyledTd>
+                        <StyledTdSecondary>
+                          {c.negocios ? (
+                            <StyledNegocioLink onClick={() => navigate(`/negocios/${c.negocios!.id}`)}>
+                              {c.negocios.titulo}
+                            </StyledNegocioLink>
+                          ) : '—'}
+                        </StyledTdSecondary>
+                        <StyledTdSecondary>{formatDate(c.inicio_vigencia)}</StyledTdSecondary>
+                        <StyledTdSecondary>{formatDate(c.fim_vigencia)}</StyledTdSecondary>
+                        <StyledTdSecondary>{c.indice_reajuste ?? '—'}</StyledTdSecondary>
                       </StyledTr>
                     ))}
                   </tbody>

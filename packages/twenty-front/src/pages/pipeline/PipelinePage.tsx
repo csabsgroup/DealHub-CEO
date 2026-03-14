@@ -5,6 +5,7 @@ import { useDeleteNegocio, useNegociosByPipeline } from '@/crm/hooks/useNegocios
 import { usePipelineEtapas, usePipelines } from '@/crm/hooks/usePipelines';
 import { styled } from '@linaria/react';
 import { useCallback, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { IconPencil, IconPlus, IconTrash } from 'twenty-ui/display';
 import { Button, IconButton } from 'twenty-ui/input';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
@@ -282,6 +283,7 @@ const groupNegociosByEtapa = (
 // --------------- Component ---------------
 
 export const PipelinePage = () => {
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPipelineId, setSelectedPipelineId] = useState<string | null>(
     null,
@@ -400,7 +402,7 @@ export const PipelinePage = () => {
                     </StyledEmptyColumn>
                   )}
                   {columnNegocios.map((negocio) => (
-                    <StyledCard key={negocio.id}>
+                    <StyledCard key={negocio.id} onClick={() => navigate(`/negocios/${negocio.id}`)}>
                       <StyledCardActions className="card-actions">
                         <IconButton
                           Icon={IconPencil}
