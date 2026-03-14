@@ -511,3 +511,87 @@ export type PropostaItemInsert = Omit<
 > & {
   id?: string;
 };
+
+// ===================== CONTRATOS =====================
+
+export type ContratoStatus = 'Minuta' | 'Enviado' | 'Assinado' | 'Cancelado';
+
+export type Contrato = {
+  id: string;
+  tenant_id: string;
+  empresa_id: string;
+  proposta_id: string | null;
+  numero: string;
+  status: ContratoStatus;
+  data_inicio: string | null;
+  data_fim: string | null;
+  valor_mensalidade: number;
+  valor_setup: number;
+  indice_reajuste: string | null;
+  periodicidade_reajuste: string | null;
+  clausulas: string | null;
+  assinado_por: string | null;
+  data_assinatura: string | null;
+  responsavel_id: string | null;
+  observacoes: string | null;
+  tags: string[];
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+export type ContratoInsert = Omit<
+  Contrato,
+  'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'deleted_at'
+> & {
+  id?: string;
+  deleted_at?: string | null;
+};
+
+export type ContratoUpdate = Partial<
+  Omit<Contrato, 'id' | 'tenant_id' | 'created_at' | 'updated_at'>
+>;
+
+// ===================== IMPLANTAÇÕES =====================
+
+export type ImplantacaoStatus =
+  | 'Pendente'
+  | 'Em Andamento'
+  | 'Concluída'
+  | 'Pausada';
+
+export type ImplantacaoRisco = 'Baixo' | 'Médio' | 'Alto';
+
+export type Implantacao = {
+  id: string;
+  tenant_id: string;
+  empresa_id: string;
+  contrato_id: string | null;
+  nome: string;
+  status: ImplantacaoStatus;
+  risco: ImplantacaoRisco;
+  data_kickoff: string | null;
+  prazo_alvo: string | null;
+  data_handoff: string | null;
+  responsavel_id: string | null;
+  checklist_concluido: boolean;
+  checklist_json: Record<string, unknown> | null;
+  observacoes: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+export type ImplantacaoInsert = Omit<
+  Implantacao,
+  'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'deleted_at'
+> & {
+  id?: string;
+  deleted_at?: string | null;
+};
+
+export type ImplantacaoUpdate = Partial<
+  Omit<Implantacao, 'id' | 'tenant_id' | 'created_at' | 'updated_at'>
+>;
