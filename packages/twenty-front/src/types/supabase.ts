@@ -278,6 +278,7 @@ export type Negocio = {
   temperatura: LeadTemperatura | null;
   data_prevista_fechamento: string | null;
   data_fechamento: string | null;
+  data_fechamento_real: string | null;
   status_final: NegocioStatusFinal | null;
   motivo_perda_id: string | null;
   motivo_perda_detalhe: string | null;

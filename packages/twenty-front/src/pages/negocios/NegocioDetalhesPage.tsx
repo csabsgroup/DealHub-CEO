@@ -1,3 +1,5 @@
+import { MarcarGanhoModal } from '@/crm/components/MarcarGanhoModal';
+import { MarcarPerdaModal } from '@/crm/components/MarcarPerdaModal';
 import { useAtividades } from '@/crm/hooks/useAtividades';
 import { useContratosByDeal } from '@/crm/hooks/useContratos';
 import { useNegocio } from '@/crm/hooks/useNegocios';
@@ -6,9 +8,12 @@ import { styled } from '@linaria/react';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
+    IconAlertTriangle,
     IconArrowLeft,
     IconBriefcase,
     IconCalendar,
+    IconCheck,
+    IconStar,
     IconTag,
     IconUser,
 } from 'twenty-ui/display';
@@ -200,6 +205,67 @@ const StyledStatDivider = styled.span`
   margin: 0 ${themeCssVariables.spacing[1]};
 `;
 
+const StyledActionButtons = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${themeCssVariables.spacing[2]};
+  flex-wrap: wrap;
+`;
+
+const StyledGanhoBtn = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: ${themeCssVariables.spacing[1]};
+  padding: 0 ${themeCssVariables.spacing[4]};
+  height: 34px;
+  border-radius: ${themeCssVariables.border.radius.sm};
+  border: none;
+  background: #22c55e;
+  color: #ffffff;
+  font-size: ${themeCssVariables.font.size.sm};
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.85;
+  }
+`;
+
+const StyledPerdaBtn = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: ${themeCssVariables.spacing[1]};
+  padding: 0 ${themeCssVariables.spacing[4]};
+  height: 34px;
+  border-radius: ${themeCssVariables.border.radius.sm};
+  border: none;
+  background: ${themeCssVariables.font.color.danger};
+  color: #ffffff;
+  font-size: ${themeCssVariables.font.size.sm};
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.85;
+  }
+`;
+
+const StyledStatusFinalBadge = styled.span<{ status: string }>`
+  display: inline-flex;
+  align-items: center;
+  gap: ${themeCssVariables.spacing[1]};
+  padding: ${themeCssVariables.spacing[1]} ${themeCssVariables.spacing[3]};
+  border-radius: ${themeCssVariables.border.radius.pill};
+  font-size: ${themeCssVariables.font.size.sm};
+  font-weight: 700;
+  background: ${(props) =>
+    props.status === 'Ganho' ? '#dcfce7' : '#fee2e2'};
+  color: ${(props) => (props.status === 'Ganho' ? '#15803d' : '#b91c1c')};
+  letter-spacing: 0.02em;
+`;
+
 // ─── Tabs ────────────────────────────────────────────────────────────────────
 
 const StyledTabBar = styled.div`
@@ -328,6 +394,8 @@ export const NegocioDetalhesPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabId>('propostas');
+  const [ganhoModalOpen, setGanhoModalOpen] = useState(false);
+  const [perdaModalOpen, setPerdaModalOpen] = useState(false);
 
   const negocioId = id ?? null;
 
@@ -370,7 +438,18 @@ export const NegocioDetalhesPage = () => {
 
         <StyledTitleRow>
           <StyledDealTitle>{negocio.titulo}</StyledDealTitle>
-          <StyledStatusPill>{negocio.status_final ?? 'Em Aberto'}</StyledStatusPill>
+          {!negocio.status_final || negocio.status_final === 'Aberto' ? (
+            <StyledStatusPill>Em Aberto</StyledStatusPill>
+          ) : (
+            <StyledStatusFinalBadge status={negocio.status_final}>
+              {negocio.status_final === 'Ganho' ? (
+                <IconStar size={14} />
+              ) : (
+                <IconAlertTriangle size={14} />
+              )}
+              {negocio.status_final}
+            </StyledStatusFinalBadge>
+          )}
         </StyledTitleRow>
 
         <StyledBadgeRow>
@@ -400,6 +479,19 @@ export const NegocioDetalhesPage = () => {
             </StyledBadge>
           )}
         </StyledBadgeRow>
+
+        {(!negocio.status_final || negocio.status_final === 'Aberto') && (
+          <StyledActionButtons>
+            <StyledGanhoBtn onClick={() => setGanhoModalOpen(true)}>
+              <IconCheck size={14} />
+              Marcar como Ganho
+            </StyledGanhoBtn>
+            <StyledPerdaBtn onClick={() => setPerdaModalOpen(true)}>
+              <IconAlertTriangle size={14} />
+              Marcar como Perdido
+            </StyledPerdaBtn>
+          </StyledActionButtons>
+        )}
 
         <StyledStatsRow>
           <StyledStat>
@@ -592,6 +684,21 @@ export const NegocioDetalhesPage = () => {
           </>
         )}
       </StyledContent>
+      {ganhoModalOpen && (
+        <MarcarGanhoModal
+          isOpen={ganhoModalOpen}
+          onClose={() => setGanhoModalOpen(false)}
+          negocio={negocio as Negocio}
+        />
+      )}
+
+      {perdaModalOpen && (
+        <MarcarPerdaModal
+          isOpen={perdaModalOpen}
+          onClose={() => setPerdaModalOpen(false)}
+          negocio={negocio as Negocio}
+        />
+      )}
     </StyledContainer>
   );
 };
