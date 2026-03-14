@@ -199,7 +199,6 @@ const NAV_ITEMS = [
   { to: '/contratos', label: 'Contratos', Icon: IconFileCheck, end: false },
   { to: '/atividades', label: 'Atividades', Icon: IconListCheck, end: false },
   { to: '/catalogo', label: 'Catálogo', Icon: IconBook2, end: false },
-  { to: '/configuracoes', label: 'Configurações', Icon: IconSettings, end: false },
 ] as const;
 
 // --------------- Component ---------------
@@ -260,6 +259,18 @@ export const AppLayout = () => {
         </StyledNavSection>
 
         <StyledSidebarFooter>
+          <NavLink
+            to="/configuracoes"
+            className={({ isActive }) =>
+              `${navLinkStyle}${isActive ? ' active' : ''}`
+            }
+          >
+            <StyledNavIconWrapper>
+              <IconSettings size={16} />
+            </StyledNavIconWrapper>
+            Configurações
+          </NavLink>
+
           <StyledTenantName>
             <StyledTenantLabel>
               <StyledTenantTitle>{tenantName ?? 'Escritório'}</StyledTenantTitle>

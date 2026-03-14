@@ -81,6 +81,30 @@ const ContratosPage = lazy(() =>
   })),
 );
 
+const ConfiguracoesLayout = lazy(() =>
+  import('~/pages/configuracoes/ConfiguracoesLayout').then((m) => ({
+    default: m.ConfiguracoesLayout,
+  })),
+);
+
+const WorkspaceConfigPage = lazy(() =>
+  import('~/pages/configuracoes/WorkspaceConfigPage').then((m) => ({
+    default: m.WorkspaceConfigPage,
+  })),
+);
+
+const MotivosPerdaConfigPage = lazy(() =>
+  import('~/pages/configuracoes/MotivosPerdaConfigPage').then((m) => ({
+    default: m.MotivosPerdaConfigPage,
+  })),
+);
+
+const PipelinesConfigPage = lazy(() =>
+  import('~/pages/configuracoes/PipelinesConfigPage').then((m) => ({
+    default: m.PipelinesConfigPage,
+  })),
+);
+
 const Loading = () => (
   <div
     style={{
@@ -120,6 +144,12 @@ export const AppRouter = () => {
               <Route path="/catalogo" element={<CatalogoPage />} />
               <Route path="/propostas" element={<PropostasPage />} />
               <Route path="/contratos" element={<ContratosPage />} />
+              <Route path="/configuracoes" element={<ConfiguracoesLayout />}>
+                <Route index element={<Navigate to="workspace" replace />} />
+                <Route path="workspace" element={<WorkspaceConfigPage />} />
+                <Route path="motivos-perda" element={<MotivosPerdaConfigPage />} />
+                <Route path="pipelines" element={<PipelinesConfigPage />} />
+              </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           </Route>
