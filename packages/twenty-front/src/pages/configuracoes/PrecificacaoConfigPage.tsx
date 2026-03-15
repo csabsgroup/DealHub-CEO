@@ -1,7 +1,10 @@
+import { useAuthContext } from '@/auth/hooks/useAuthContext';
 import { styled } from '@linaria/react';
 import { useMemo, useState } from 'react';
 import { IconCheck, IconCurrencyDollar } from 'twenty-ui/display';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
+
+const MASTER_EMAIL = 'matheus.leme@absgroup.com.br';
 
 import {
     usePrecificacaoParametros,
@@ -293,9 +296,30 @@ const jsonToEntries = (obj: Record<string, number>): [string, number][] =>
 
 // ===================== COMPONENT =====================
 
+const StyledAccessDenied = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: ${themeCssVariables.spacing[3]};
+  color: ${themeCssVariables.font.color.tertiary};
+  font-size: ${themeCssVariables.font.size.md};
+`;
+
 export const PrecificacaoConfigPage = () => {
+  const { user } = useAuthContext();
   const { data: parametrosDb, isLoading } = usePrecificacaoParametros();
   const updateMutation = useUpdatePrecificacaoParametros();
+
+  if (user?.email !== MASTER_EMAIL) {
+    return (
+      <StyledAccessDenied>
+        <IconCurrencyDollar size={32} />
+        <span>Acesso restrito ao administrador do sistema.</span>
+      </StyledAccessDenied>
+    );
+  }
 
   // Coeficientes editáveis (inicializa com DB ou defaults)
   const [editState, setEditState] = useState<PrecificacaoParametrosData | null>(

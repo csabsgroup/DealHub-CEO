@@ -1,8 +1,11 @@
+import { useAuthContext } from '@/auth/hooks/useAuthContext';
 import { css } from '@linaria/core';
 import { styled } from '@linaria/react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { IconBriefcase, IconCurrencyDollar, IconLayoutKanban, IconTag } from 'twenty-ui/display';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
+
+const MASTER_EMAIL = 'matheus.leme@absgroup.com.br';
 
 // --------------- Styled Components ---------------
 
@@ -81,7 +84,7 @@ const StyledConfigContent = styled.main`
 
 // --------------- Nav items definition ---------------
 
-const CONFIG_NAV_ITEMS = [
+const CONFIG_NAV_ITEMS_BASE = [
   { to: '/configuracoes/workspace', label: 'Workspace', Icon: IconBriefcase },
   {
     to: '/configuracoes/pipelines',
@@ -93,22 +96,28 @@ const CONFIG_NAV_ITEMS = [
     label: 'Motivos de Perda',
     Icon: IconTag,
   },
-  {
-    to: '/configuracoes/precificacao',
-    label: 'Precificação',
-    Icon: IconCurrencyDollar,
-  },
 ] as const;
+
+const PRECIFICACAO_NAV_ITEM = {
+  to: '/configuracoes/precificacao' as const,
+  label: 'Precificação',
+  Icon: IconCurrencyDollar,
+};
 
 // --------------- Component ---------------
 
 export const ConfiguracoesLayout = () => {
+  const { user } = useAuthContext();
+  const navItems = user?.email === MASTER_EMAIL
+    ? [...CONFIG_NAV_ITEMS_BASE, PRECIFICACAO_NAV_ITEM]
+    : CONFIG_NAV_ITEMS_BASE;
+
   return (
     <StyledConfigContainer>
       <StyledConfigSidebar>
         <StyledSidebarTitle>Configurações</StyledSidebarTitle>
         <StyledNavItems>
-          {CONFIG_NAV_ITEMS.map(({ to, label, Icon }) => (
+          {navItems.map(({ to, label, Icon }) => (
             <NavLink
               key={to}
               to={to}

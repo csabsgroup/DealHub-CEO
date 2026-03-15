@@ -474,6 +474,15 @@ export type Proposta = {
   status: PropostaStatus;
   observacoes: string | null;
   criado_por_id: string | null;
+  // Campos do Cálculo Inteligente (migration 00019)
+  faturamento_anual: number | null;
+  numero_funcionarios: number | null;
+  regime_tributario: string | null;
+  fator_operacoes: string | null;
+  fator_filiais: string | null;
+  fator_automacao: string | null;
+  fator_risco: string | null;
+  pacote_escolhido: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -481,10 +490,30 @@ export type Proposta = {
 
 export type PropostaInsert = Omit<
   Proposta,
-  'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'deleted_at'
+  | 'id'
+  | 'tenant_id'
+  | 'created_at'
+  | 'updated_at'
+  | 'deleted_at'
+  | 'faturamento_anual'
+  | 'numero_funcionarios'
+  | 'regime_tributario'
+  | 'fator_operacoes'
+  | 'fator_filiais'
+  | 'fator_automacao'
+  | 'fator_risco'
+  | 'pacote_escolhido'
 > & {
   id?: string;
   deleted_at?: string | null;
+  faturamento_anual?: number | null;
+  numero_funcionarios?: number | null;
+  regime_tributario?: string | null;
+  fator_operacoes?: string | null;
+  fator_filiais?: string | null;
+  fator_automacao?: string | null;
+  fator_risco?: string | null;
+  pacote_escolhido?: string | null;
 };
 
 export type PropostaUpdate = Partial<
