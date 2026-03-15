@@ -115,8 +115,7 @@ export const NovoPipelineModal = ({ isOpen, onClose }: NovoPipelineModalProps) =
     onClose();
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     if (!nome.trim()) {
       setError('O nome do pipeline é obrigatório.');
       return;
@@ -139,13 +138,13 @@ export const NovoPipelineModal = ({ isOpen, onClose }: NovoPipelineModalProps) =
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} size="medium">
+    <Modal isOpen={isOpen} onBackdropMouseDown={handleClose} size="medium">
       <ModalHeader>
         <StyledTitle>Novo Pipeline</StyledTitle>
       </ModalHeader>
 
       <ModalContent>
-        <StyledForm id="novo-pipeline-form" onSubmit={handleSubmit}>
+        <StyledForm id="novo-pipeline-form" onSubmit={(e) => { e.preventDefault(); }}>
           <StyledFieldGroup>
             <StyledLabel htmlFor="np-nome">
               Nome <StyledRequired>*</StyledRequired>
@@ -194,8 +193,7 @@ export const NovoPipelineModal = ({ isOpen, onClose }: NovoPipelineModalProps) =
           size="small"
           variant="primary"
           title="Criar Pipeline"
-          type="submit"
-          form="novo-pipeline-form"
+          onClick={handleSubmit}
           disabled={createPipeline.isPending}
         />
       </ModalFooter>

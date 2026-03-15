@@ -215,8 +215,7 @@ export const EditarEtapaModal = ({
     setError('');
   }, [etapa]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     if (!nome.trim()) {
       setError('O nome da etapa é obrigatório.');
       return;
@@ -246,13 +245,13 @@ export const EditarEtapaModal = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="medium">
+    <Modal isOpen={isOpen} onBackdropMouseDown={onClose} size="medium">
       <ModalHeader>
         <StyledTitle>Editar Etapa</StyledTitle>
       </ModalHeader>
 
       <ModalContent>
-        <StyledForm id="editar-etapa-form" onSubmit={handleSubmit}>
+        <StyledForm id="editar-etapa-form" onSubmit={(e) => { e.preventDefault(); }}>
           <StyledFieldGroup>
             <StyledLabel htmlFor="ee-nome">
               Nome da etapa <StyledRequired>*</StyledRequired>
@@ -345,8 +344,7 @@ export const EditarEtapaModal = ({
           size="small"
           variant="primary"
           title="Salvar Alterações"
-          type="submit"
-          form="editar-etapa-form"
+          onClick={handleSubmit}
           disabled={updateEtapa.isPending}
         />
       </ModalFooter>

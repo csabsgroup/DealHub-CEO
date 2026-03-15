@@ -126,8 +126,7 @@ export const EditarPipelineModal = ({
     setError('');
   }, [pipeline]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     if (!nome.trim()) {
       setError('O nome do pipeline é obrigatório.');
       return;
@@ -151,13 +150,13 @@ export const EditarPipelineModal = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="medium">
+    <Modal isOpen={isOpen} onBackdropMouseDown={onClose} size="medium">
       <ModalHeader>
         <StyledTitle>Editar Pipeline</StyledTitle>
       </ModalHeader>
 
       <ModalContent>
-        <StyledForm id="editar-pipeline-form" onSubmit={handleSubmit}>
+        <StyledForm id="editar-pipeline-form" onSubmit={(e) => { e.preventDefault(); }}>
           <StyledFieldGroup>
             <StyledLabel htmlFor="ep-nome">
               Nome <StyledRequired>*</StyledRequired>
@@ -215,8 +214,7 @@ export const EditarPipelineModal = ({
           size="small"
           variant="primary"
           title="Salvar Alterações"
-          type="submit"
-          form="editar-pipeline-form"
+          onClick={handleSubmit}
           disabled={updatePipeline.isPending}
         />
       </ModalFooter>

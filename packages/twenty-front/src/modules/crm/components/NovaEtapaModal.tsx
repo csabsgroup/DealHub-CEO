@@ -198,8 +198,7 @@ export const NovaEtapaModal = ({
     onClose();
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     if (!nome.trim()) {
       setError('O nome da etapa é obrigatório.');
       return;
@@ -230,13 +229,13 @@ export const NovaEtapaModal = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} size="medium">
+    <Modal isOpen={isOpen} onBackdropMouseDown={handleClose} size="medium">
       <ModalHeader>
         <StyledTitle>Nova Etapa</StyledTitle>
       </ModalHeader>
 
       <ModalContent>
-        <StyledForm id="nova-etapa-form" onSubmit={handleSubmit}>
+        <StyledForm id="nova-etapa-form" onSubmit={(e) => { e.preventDefault(); }}>
           <StyledFieldGroup>
             <StyledLabel htmlFor="ne-nome">
               Nome da etapa <StyledRequired>*</StyledRequired>
@@ -317,8 +316,7 @@ export const NovaEtapaModal = ({
           size="small"
           variant="primary"
           title="Criar Etapa"
-          type="submit"
-          form="nova-etapa-form"
+          onClick={handleSubmit}
           disabled={createEtapa.isPending}
         />
       </ModalFooter>
