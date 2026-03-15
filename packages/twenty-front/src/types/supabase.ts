@@ -1,19 +1,67 @@
 // Tipagens TypeScript para todas as tabelas do Supabase (Fase 2)
-// Cada tipo reflete exatamente o schema SQL das migrations 00008-00020
+// Cada tipo reflete exatamente o schema SQL das migrations 00008-00021
+
+// ===================== RBAC DINÂMICO (migration 00021) =====================
+
+// Permissões granulares disponíveis no sistema RBAC
+export type RbacPermissoes = {
+  can_view_all_deals: boolean;
+  can_delete_deals: boolean;
+  can_access_settings: boolean;
+  can_manage_financials: boolean;
+  can_export_data: boolean;
+};
+
+export const DEFAULT_PERMISSOES: RbacPermissoes = {
+  can_view_all_deals: false,
+  can_delete_deals: false,
+  can_access_settings: false,
+  can_manage_financials: false,
+  can_export_data: false,
+};
+
+// Rótulos legíveis para cada permissão (usados na UI)
+export const PERMISSAO_LABELS: Record<keyof RbacPermissoes, { label: string; descricao: string }> = {
+  can_view_all_deals:    { label: 'Ver todos os negócios',    descricao: 'Acessa negócios de toda a equipe, não apenas os próprios.' },
+  can_delete_deals:      { label: 'Excluir negócios',         descricao: 'Pode remover negócios permanentemente do sistema.' },
+  can_access_settings:   { label: 'Acessar configurações',    descricao: 'Acessa o painel de Configurações do workspace.' },
+  can_manage_financials: { label: 'Gerenciar financeiro',     descricao: 'Visualiza e edita valores de propostas e precificação.' },
+  can_export_data:       { label: 'Exportar dados',           descricao: 'Exporta listas de empresas, negócios e relatórios.' },
+};
+
+export type TenantRole = {
+  id: string;
+  tenant_id: string;
+  nome: string;
+  descricao: string | null;
+  is_system_default: boolean;
+  permissoes: RbacPermissoes;
+  created_at: string;
+  updated_at: string;
+};
+
+export type TenantRoleInsert = Omit<TenantRole, 'id' | 'tenant_id' | 'created_at' | 'updated_at'> & {
+  id?: string;
+};
+
+export type TenantRoleUpdate = Partial<Pick<TenantRole, 'nome' | 'descricao' | 'permissoes'>>;
 
 // ===================== GESTÃO DE USUÁRIOS (migration 00020) =====================
 
+// Mantido para compatibilidade com migration 00020 e RLS existente
 export type PerfilCRM = 'admin' | 'vendedor' | 'sdr';
 
-// Tipo unificado retornado pelo hook useUsuarios (join user_tenants + profiles)
+// Tipo unificado retornado pelo hook useUsuarios (join user_tenants + profiles + tenant_roles)
 export type UsuarioCRM = {
-  id: string;        // user_tenants.id
-  user_id: string;   // profiles.id / auth.users.id
-  perfil_crm: PerfilCRM;
+  id: string;            // user_tenants.id
+  user_id: string;       // profiles.id / auth.users.id
+  tenant_role_id: string | null;
   is_active: boolean;
   created_at: string;
   email: string;
   full_name: string | null;
+  role_nome: string | null;
+  role_permissoes: RbacPermissoes | null;
 };
 
 // ===================== EMPRESAS =====================

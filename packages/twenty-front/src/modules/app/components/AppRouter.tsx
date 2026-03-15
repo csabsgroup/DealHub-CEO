@@ -117,6 +117,12 @@ const UsuariosConfigPage = lazy(() =>
   })),
 );
 
+const PerfisAcessoConfigPage = lazy(() =>
+  import('~/pages/configuracoes/PerfisAcessoConfigPage').then((m) => ({
+    default: m.PerfisAcessoConfigPage,
+  })),
+);
+
 const Loading = () => (
   <div
     style={{
@@ -163,6 +169,7 @@ export const AppRouter = () => {
                 <Route path="pipelines" element={<PipelinesConfigPage />} />
                 <Route path="precificacao" element={<PrecificacaoConfigPage />} />
                 <Route path="usuarios" element={<UsuariosConfigPage />} />
+                <Route path="perfis-acesso" element={<PerfisAcessoConfigPage />} />
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>

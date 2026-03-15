@@ -7,7 +7,7 @@ import { styled } from '@linaria/react';
 import { useState } from 'react';
 import { IconPencil, IconPlus, IconUsers } from 'twenty-ui/display';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
-import type { PerfilCRM, UsuarioCRM } from '~/types/supabase';
+import type { UsuarioCRM } from '~/types/supabase';
 
 // --------------- Styled Components ---------------
 
@@ -155,20 +155,9 @@ const StyledBadge = styled.span`
   font-size: ${themeCssVariables.font.size.xs};
   font-weight: 600;
 
-  &[data-perfil='admin'] {
-    background: #dbeafe;
-    color: #1d4ed8;
-  }
-
-  &[data-perfil='vendedor'] {
-    background: #dcfce7;
-    color: #15803d;
-  }
-
-  &[data-perfil='sdr'] {
-    background: #ffedd5;
-    color: #c2410c;
-  }
+  background: ${themeCssVariables.background.secondary};
+  color: ${themeCssVariables.font.color.secondary};
+  border: 1px solid ${themeCssVariables.border.color.light};
 `;
 
 const StyledStatusBadge = styled.span`
@@ -226,12 +215,6 @@ const StyledEmptyTitle = styled.p`
 `;
 
 // --------------- Helpers ---------------
-
-const PERFIL_LABEL: Record<PerfilCRM, string> = {
-  admin: 'Admin',
-  vendedor: 'Vendedor',
-  sdr: 'SDR',
-};
 
 const getInitials = (name: string | null, email: string): string => {
   if (name && name.trim()) {
@@ -313,8 +296,8 @@ export const UsuariosConfigPage = () => {
                     <StyledEmailText>{u.email}</StyledEmailText>
                   </StyledTd>
                   <StyledTd>
-                    <StyledBadge data-perfil={u.perfil_crm}>
-                      {PERFIL_LABEL[u.perfil_crm]}
+                    <StyledBadge>
+                      {u.role_nome ?? '—'}
                     </StyledBadge>
                   </StyledTd>
                   <StyledTd>

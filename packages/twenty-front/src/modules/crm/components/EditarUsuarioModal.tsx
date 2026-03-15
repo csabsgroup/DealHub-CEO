@@ -3,11 +3,12 @@ import { useEffect, useState } from 'react';
 import { Button } from 'twenty-ui/input';
 import { Modal, ModalContent, ModalFooter, ModalHeader } from 'twenty-ui/layout';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
+import { useTenantRoles } from '~/modules/crm/hooks/useTenantRoles';
 import {
     useUpdateUsuarioCRM,
     type UpdateUsuarioInput,
 } from '~/modules/crm/hooks/useUsuarios';
-import type { PerfilCRM, UsuarioCRM } from '~/types/supabase';
+import type { UsuarioCRM } from '~/types/supabase';
 
 // --------------- Types ---------------
 
@@ -19,7 +20,7 @@ type EditarUsuarioModalProps = {
 
 type FormData = {
   full_name: string;
-  perfil_crm: PerfilCRM;
+  tenant_role_id: string | null;
   is_active: boolean;
 };
 
@@ -172,20 +173,24 @@ export const EditarUsuarioModal = ({
   onClose,
   usuario,
 }: EditarUsuarioModalProps) => {
+  const { data: roles, isLoading: loadingRoles } = useTenantRoles();
+
   const [formData, setFormData] = useState<FormData>({
     full_name: usuario.full_name ?? '',
-    perfil_crm: usuario.perfil_crm,
+    tenant_role_id: usuario.tenant_role_id,
     is_active: usuario.is_active,
   });
   const [errorMsg, setErrorMsg] = useState('');
 
   const { mutateAsync: update, isPending } = useUpdateUsuarioCRM();
 
+  const selectedRole = roles?.find((r) => r.id === formData.tenant_role_id);
+
   // Sync form when usuario changes
   useEffect(() => {
     setFormData({
       full_name: usuario.full_name ?? '',
-      perfil_crm: usuario.perfil_crm,
+      tenant_role_id: usuario.tenant_role_id,
       is_active: usuario.is_active,
     });
     setErrorMsg('');
@@ -204,7 +209,7 @@ export const EditarUsuarioModal = ({
       const payload: UpdateUsuarioInput = {
         id: usuario.id,
         user_id: usuario.user_id,
-        perfil_crm: formData.perfil_crm,
+        tenant_role_id: formData.tenant_role_id,
         is_active: formData.is_active,
         full_name: formData.full_name.trim() || undefined,
       };
@@ -244,24 +249,36 @@ export const EditarUsuarioModal = ({
             />
           </StyledFieldGroup>
 
-          {/* Nível de Acesso */}
+          {/* Perfil de Acesso dinâmico */}
           <StyledFieldGroup>
-            <StyledLabel htmlFor="eu-perfil">Nível de Acesso</StyledLabel>
+            <StyledLabel htmlFor="eu-role">Perfil de Acesso</StyledLabel>
             <StyledSelect
-              id="eu-perfil"
-              name="perfil_crm"
-              value={formData.perfil_crm}
+              id="eu-role"
+              name="tenant_role_id"
+              value={formData.tenant_role_id ?? ''}
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
-                  perfil_crm: e.target.value as PerfilCRM,
+                  tenant_role_id: e.target.value || null,
                 }))
               }
+              disabled={loadingRoles || !roles?.length}
             >
-              <option value="admin">Admin — acesso total e configurações</option>
-              <option value="vendedor">Vendedor — gestão de negócios e propostas</option>
-              <option value="sdr">SDR — qualificação de leads</option>
+              {loadingRoles && <option>Carregando perfis...</option>}
+              {!loadingRoles && !roles?.length && (
+                <option>Nenhum perfil disponível</option>
+              )}
+              {roles?.map((role) => (
+                <option key={role.id} value={role.id}>
+                  {role.nome}
+                </option>
+              ))}
             </StyledSelect>
+            {selectedRole?.descricao && (
+              <p style={{ fontSize: '11px', color: 'var(--t-font-color-tertiary)', margin: 0, lineHeight: 1.5 }}>
+                {selectedRole.descricao}
+              </p>
+            )}
           </StyledFieldGroup>
 
           {/* Ativo/Inativo */}

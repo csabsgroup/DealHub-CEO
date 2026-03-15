@@ -1,3 +1,4 @@
+import { useTenantRoles } from '@/crm/hooks/useTenantRoles';
 import { styled } from '@linaria/react';
 import { useState } from 'react';
 import { Button } from 'twenty-ui/input';
@@ -7,7 +8,6 @@ import {
     useConvidarUsuario,
     type ConvidarInput,
 } from '~/modules/crm/hooks/useUsuarios';
-import type { PerfilCRM } from '~/types/supabase';
 
 // --------------- Types ---------------
 
@@ -19,13 +19,7 @@ type NovoUsuarioModalProps = {
 type FormData = {
   email: string;
   full_name: string;
-  perfil_crm: PerfilCRM;
-};
-
-const EMPTY_FORM: FormData = {
-  email: '',
-  full_name: '',
-  perfil_crm: 'vendedor',
+  tenant_role_id: string;
 };
 
 // --------------- Styled Components ---------------
@@ -101,6 +95,17 @@ const StyledHint = styled.p`
   line-height: 1.5;
 `;
 
+const StyledRoleDesc = styled.p`
+  font-size: ${themeCssVariables.font.size.xs};
+  color: ${themeCssVariables.font.color.secondary};
+  margin: 0;
+  padding: ${themeCssVariables.spacing[2]} ${themeCssVariables.spacing[3]};
+  background: ${themeCssVariables.background.secondary};
+  border-radius: ${themeCssVariables.border.radius.sm};
+  border: 1px solid ${themeCssVariables.border.color.light};
+  line-height: 1.5;
+`;
+
 const StyledError = styled.p`
   font-size: ${themeCssVariables.font.size.xs};
   color: ${themeCssVariables.font.color.danger};
@@ -114,10 +119,20 @@ const StyledError = styled.p`
 // --------------- Component ---------------
 
 export const NovoUsuarioModal = ({ isOpen, onClose }: NovoUsuarioModalProps) => {
-  const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
+  const { data: roles, isLoading: loadingRoles } = useTenantRoles();
+  const defaultRoleId = roles?.find((r) => r.nome === 'Vendedor')?.id ?? roles?.[1]?.id ?? roles?.[0]?.id ?? '';
+
+  const [formData, setFormData] = useState<FormData>({
+    email: '',
+    full_name: '',
+    tenant_role_id: '',
+  });
   const [errorMsg, setErrorMsg] = useState('');
 
   const { mutateAsync: convidar, isPending } = useConvidarUsuario();
+
+  const effectiveRoleId = formData.tenant_role_id || defaultRoleId;
+  const selectedRole = roles?.find((r) => r.id === effectiveRoleId);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -128,7 +143,7 @@ export const NovoUsuarioModal = ({ isOpen, onClose }: NovoUsuarioModalProps) => 
   };
 
   const handleClose = () => {
-    setFormData(EMPTY_FORM);
+    setFormData({ email: '', full_name: '', tenant_role_id: '' });
     setErrorMsg('');
     onClose();
   };
@@ -139,7 +154,12 @@ export const NovoUsuarioModal = ({ isOpen, onClose }: NovoUsuarioModalProps) => 
 
     setErrorMsg('');
     try {
-      await convidar(formData as ConvidarInput);
+      const payload: ConvidarInput = {
+        email: formData.email.trim(),
+        full_name: formData.full_name.trim(),
+        tenant_role_id: effectiveRoleId,
+      };
+      await convidar(payload);
       handleClose();
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Erro ao adicionar usuário.');
@@ -186,19 +206,29 @@ export const NovoUsuarioModal = ({ isOpen, onClose }: NovoUsuarioModalProps) => 
           </StyledFieldGroup>
 
           <StyledFieldGroup>
-            <StyledLabel htmlFor="nu-perfil">
-              Nível de Acesso<StyledRequired>*</StyledRequired>
+            <StyledLabel htmlFor="nu-role">
+              Perfil de Acesso<StyledRequired>*</StyledRequired>
             </StyledLabel>
             <StyledSelect
-              id="nu-perfil"
-              name="perfil_crm"
-              value={formData.perfil_crm}
+              id="nu-role"
+              name="tenant_role_id"
+              value={formData.tenant_role_id || effectiveRoleId}
               onChange={handleChange}
+              disabled={loadingRoles || !roles?.length}
             >
-              <option value="admin">Admin — acesso total e configurações</option>
-              <option value="vendedor">Vendedor — gestão de negócios e propostas</option>
-              <option value="sdr">SDR — qualificação de leads</option>
+              {loadingRoles && <option>Carregando perfis...</option>}
+              {!loadingRoles && !roles?.length && (
+                <option>Nenhum perfil disponível</option>
+              )}
+              {roles?.map((role) => (
+                <option key={role.id} value={role.id}>
+                  {role.nome}
+                </option>
+              ))}
             </StyledSelect>
+            {selectedRole?.descricao && (
+              <StyledRoleDesc>{selectedRole.descricao}</StyledRoleDesc>
+            )}
           </StyledFieldGroup>
 
           {errorMsg && <StyledError>{errorMsg}</StyledError>}
@@ -216,7 +246,7 @@ export const NovoUsuarioModal = ({ isOpen, onClose }: NovoUsuarioModalProps) => 
           variant="primary"
           title={isPending ? 'Adicionando...' : 'Adicionar'}
           onClick={handleSubmit}
-          disabled={isPending || !formData.email.trim()}
+          disabled={isPending || !formData.email.trim() || !effectiveRoleId}
         />
       </ModalFooter>
     </Modal>
