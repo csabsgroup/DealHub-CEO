@@ -104,43 +104,48 @@ const StyledInput = styled.input`
   }
 `;
 
-const StyledActionButton = styled.button<{ variant?: 'primary' | 'ghost' | 'danger' }>`
+const StyledPrimaryActionButton = styled.button`
   display: inline-flex;
   align-items: center;
   gap: ${themeCssVariables.spacing[1]};
   padding: 0 ${themeCssVariables.spacing[3]};
   height: 36px;
   border-radius: ${themeCssVariables.border.radius.sm};
-  border: 1px solid transparent;
+  border: none;
   font-size: ${themeCssVariables.font.size.sm};
   font-weight: 500;
   cursor: pointer;
   transition: background 0.15s ease, opacity 0.15s ease;
-  background: ${({ variant }) =>
-    variant === 'primary'
-      ? themeCssVariables.accent.primary
-      : variant === 'danger'
-        ? 'transparent'
-        : 'transparent'};
-  color: ${({ variant }) =>
-    variant === 'primary'
-      ? themeCssVariables.font.color.inverted
-      : variant === 'danger'
-        ? themeCssVariables.font.color.danger
-        : themeCssVariables.font.color.secondary};
-  border-color: ${({ variant }) =>
-    variant === 'ghost' || variant === 'danger'
-      ? themeCssVariables.border.color.medium
-      : 'transparent'};
+  background: ${themeCssVariables.accent.primary};
+  color: ${themeCssVariables.font.color.inverted};
 
   &:hover:not(:disabled) {
     opacity: 0.85;
-    background: ${({ variant }) =>
-      variant === 'ghost'
-        ? themeCssVariables.background.tertiary
-        : variant === 'danger'
-          ? themeCssVariables.background.danger
-          : undefined};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const StyledGhostActionButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: ${themeCssVariables.spacing[1]};
+  padding: 0 ${themeCssVariables.spacing[3]};
+  height: 36px;
+  border-radius: ${themeCssVariables.border.radius.sm};
+  border: 1px solid ${themeCssVariables.border.color.medium};
+  font-size: ${themeCssVariables.font.size.sm};
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease;
+  background: transparent;
+  color: ${themeCssVariables.font.color.secondary};
+
+  &:hover:not(:disabled) {
+    background: ${themeCssVariables.background.tertiary};
   }
 
   &:disabled {
@@ -196,21 +201,26 @@ const StyledTd = styled.td`
   vertical-align: middle;
 `;
 
-const StyledStatusBadge = styled.span<{ active: boolean }>`
+const StyledActiveBadge = styled.span`
   display: inline-flex;
   align-items: center;
   padding: 2px ${themeCssVariables.spacing[2]};
   border-radius: 999px;
   font-size: ${themeCssVariables.font.size.xs};
   font-weight: 500;
-  background: ${({ active }) =>
-    active
-      ? `color-mix(in srgb, ${themeCssVariables.font.color.success} 15%, transparent)`
-      : `color-mix(in srgb, ${themeCssVariables.font.color.secondary} 15%, transparent)`};
-  color: ${({ active }) =>
-    active
-      ? themeCssVariables.font.color.success
-      : themeCssVariables.font.color.secondary};
+  background: ${themeCssVariables.background.transparent.success};
+  color: ${themeCssVariables.snackBar.success.color};
+`;
+
+const StyledInactiveBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  padding: 2px ${themeCssVariables.spacing[2]};
+  border-radius: 999px;
+  font-size: ${themeCssVariables.font.size.xs};
+  font-weight: 500;
+  background: color-mix(in srgb, ${themeCssVariables.font.color.secondary} 15%, transparent);
+  color: ${themeCssVariables.font.color.secondary};
 `;
 
 const StyledActionsCell = styled.div`
@@ -238,7 +248,7 @@ const StyledIconButton = styled.button`
   }
 `;
 
-const StyledToggleButton = styled.button<{ active: boolean }>`
+const StyledDeactivateButton = styled.button`
   display: inline-flex;
   align-items: center;
   padding: 0 ${themeCssVariables.spacing[2]};
@@ -249,14 +259,27 @@ const StyledToggleButton = styled.button<{ active: boolean }>`
   cursor: pointer;
   border: none;
   transition: opacity 0.15s ease;
-  background: ${({ active }) =>
-    active
-      ? `color-mix(in srgb, ${themeCssVariables.font.color.danger} 15%, transparent)`
-      : `color-mix(in srgb, ${themeCssVariables.font.color.success} 15%, transparent)`};
-  color: ${({ active }) =>
-    active
-      ? themeCssVariables.font.color.danger
-      : themeCssVariables.font.color.success};
+  background: ${themeCssVariables.background.transparent.danger};
+  color: ${themeCssVariables.font.color.danger};
+
+  &:hover {
+    opacity: 0.8;
+  }
+`;
+
+const StyledActivateButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  padding: 0 ${themeCssVariables.spacing[2]};
+  height: 24px;
+  border-radius: 999px;
+  font-size: ${themeCssVariables.font.size.xs};
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.15s ease;
+  background: ${themeCssVariables.background.transparent.success};
+  color: ${themeCssVariables.snackBar.success.color};
 
   &:hover {
     opacity: 0.8;
@@ -355,22 +378,20 @@ export const MotivosPerdaConfigPage = () => {
               }}
               autoFocus
             />
-            <StyledActionButton
-              variant="primary"
+            <StyledPrimaryActionButton
               onClick={handleAdd}
               disabled={!newNome.trim() || createMutation.isPending}
             >
               {createMutation.isPending ? 'Salvando...' : 'Adicionar'}
-            </StyledActionButton>
-            <StyledActionButton
-              variant="ghost"
+            </StyledPrimaryActionButton>
+            <StyledGhostActionButton
               onClick={() => {
                 setShowAddForm(false);
                 setNewNome('');
               }}
             >
               Cancelar
-            </StyledActionButton>
+            </StyledGhostActionButton>
           </StyledAddForm>
         )}
 
@@ -420,9 +441,11 @@ export const MotivosPerdaConfigPage = () => {
                     )}
                   </StyledTd>
                   <StyledTd>
-                    <StyledStatusBadge active={motivo.is_active}>
-                      {motivo.is_active ? 'Ativo' : 'Inativo'}
-                    </StyledStatusBadge>
+                    {motivo.is_active ? (
+                      <StyledActiveBadge>Ativo</StyledActiveBadge>
+                    ) : (
+                      <StyledInactiveBadge>Inativo</StyledInactiveBadge>
+                    )}
                   </StyledTd>
                   <StyledTd>
                     <StyledActionsCell>
@@ -450,13 +473,21 @@ export const MotivosPerdaConfigPage = () => {
                           >
                             <IconPencil size={14} />
                           </StyledIconButton>
-                          <StyledToggleButton
-                            active={motivo.is_active}
-                            onClick={() => handleToggleActive(motivo)}
-                            disabled={updateMutation.isPending}
-                          >
-                            {motivo.is_active ? 'Inativar' : 'Reativar'}
-                          </StyledToggleButton>
+                          {motivo.is_active ? (
+                            <StyledDeactivateButton
+                              onClick={() => handleToggleActive(motivo)}
+                              disabled={updateMutation.isPending}
+                            >
+                              Inativar
+                            </StyledDeactivateButton>
+                          ) : (
+                            <StyledActivateButton
+                              onClick={() => handleToggleActive(motivo)}
+                              disabled={updateMutation.isPending}
+                            >
+                              Reativar
+                            </StyledActivateButton>
+                          )}
                         </>
                       )}
                     </StyledActionsCell>

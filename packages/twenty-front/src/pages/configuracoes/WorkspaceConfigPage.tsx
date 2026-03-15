@@ -125,7 +125,7 @@ const StyledSavedMessage = styled.span`
   align-items: center;
   gap: ${themeCssVariables.spacing[1]};
   font-size: ${themeCssVariables.font.size.sm};
-  color: ${themeCssVariables.font.color.success};
+  color: ${themeCssVariables.snackBar.success.color};
   font-weight: 500;
 `;
 
@@ -161,17 +161,40 @@ const StyledSaveButton = styled.button`
 // --------------- Component ---------------
 
 export const WorkspaceConfigPage = () => {
-  const { activeTenant } = useAuthContext();
+  const { activeTenant, isLoading: authLoading } = useAuthContext();
   const { tenantId } = useTenant();
   const queryClient = useQueryClient();
 
   const [form, setForm] = useState({
-    name: activeTenant?.name ?? '',
-    cnpj: activeTenant?.cnpj ?? '',
-    timezone: activeTenant?.timezone ?? 'America/Sao_Paulo',
-    language: activeTenant?.language ?? 'pt-BR',
+    name: '',
+    cnpj: '',
+    timezone: 'America/Sao_Paulo',
+    language: 'pt-BR',
   });
   const [saved, setSaved] = useState(false);
+  const [initialized, setInitialized] = useState(false);
+
+  // Sincroniza form com dados do tenant quando carregam
+  if (activeTenant && !initialized) {
+    setForm({
+      name: activeTenant.name ?? '',
+      cnpj: activeTenant.cnpj ?? '',
+      timezone: activeTenant.timezone ?? 'America/Sao_Paulo',
+      language: activeTenant.language ?? 'pt-BR',
+    });
+    setInitialized(true);
+  }
+
+  if (authLoading) {
+    return (
+      <StyledPageContainer>
+        <StyledPageHeader>
+          <StyledPageTitle>Workspace</StyledPageTitle>
+          <StyledPageSubtitle>Carregando...</StyledPageSubtitle>
+        </StyledPageHeader>
+      </StyledPageContainer>
+    );
+  }
 
   const mutation = useMutation({
     mutationFn: async (data: typeof form) => {
