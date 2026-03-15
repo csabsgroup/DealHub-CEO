@@ -1,8 +1,8 @@
 import { css } from '@linaria/core';
 import { styled } from '@linaria/react';
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from 'twenty-ui/input';
-import { Modal, ModalContent, ModalFooter, ModalHeader } from 'twenty-ui/layout';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 import { useUpdatePipelineEtapaConfig } from '~/modules/crm/hooks/usePipelinesConfig';
 import type {
@@ -189,6 +189,43 @@ const StyledInputSuffix = styled.span`
   flex-shrink: 0;
 `;
 
+const StyledOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const StyledModalBox = styled.div`
+  background: ${themeCssVariables.background.primary};
+  border-radius: ${themeCssVariables.border.radius.md};
+  width: 480px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+`;
+
+const StyledModalHeader = styled.div`
+  padding: ${themeCssVariables.spacing[4]};
+  border-bottom: 1px solid ${themeCssVariables.border.color.light};
+`;
+
+const StyledModalContent = styled.div`
+  padding: ${themeCssVariables.spacing[4]};
+`;
+
+const StyledModalFooter = styled.div`
+  padding: ${themeCssVariables.spacing[3]} ${themeCssVariables.spacing[4]};
+  border-top: 1px solid ${themeCssVariables.border.color.light};
+  display: flex;
+  justify-content: flex-end;
+  gap: ${themeCssVariables.spacing[2]};
+`;
+
 // --------------- Component ---------------
 
 export const EditarEtapaModal = ({
@@ -244,13 +281,16 @@ export const EditarEtapaModal = ({
     }
   };
 
-  return (
-    <Modal isOpen={isOpen} onBackdropMouseDown={onClose} size="medium">
-      <ModalHeader>
-        <StyledTitle>Editar Etapa</StyledTitle>
-      </ModalHeader>
+  if (!isOpen) return null;
 
-      <ModalContent>
+  return createPortal(
+    <StyledOverlay onClick={onClose}>
+      <StyledModalBox onClick={(e) => e.stopPropagation()}>
+        <StyledModalHeader>
+          <StyledTitle>Editar Etapa</StyledTitle>
+        </StyledModalHeader>
+
+        <StyledModalContent>
         <StyledForm id="editar-etapa-form" onSubmit={(e) => { e.preventDefault(); }}>
           <StyledFieldGroup>
             <StyledLabel htmlFor="ee-nome">
@@ -331,23 +371,25 @@ export const EditarEtapaModal = ({
 
           {error && <StyledError>{error}</StyledError>}
         </StyledForm>
-      </ModalContent>
+        </StyledModalContent>
 
-      <ModalFooter>
-        <Button
-          size="small"
-          variant="secondary"
-          title="Cancelar"
-          onClick={onClose}
-        />
-        <Button
-          size="small"
-          variant="primary"
-          title="Salvar Alterações"
-          onClick={handleSubmit}
-          disabled={updateEtapa.isPending}
-        />
-      </ModalFooter>
-    </Modal>
+        <StyledModalFooter>
+          <Button
+            size="small"
+            variant="secondary"
+            title="Cancelar"
+            onClick={onClose}
+          />
+          <Button
+            size="small"
+            variant="primary"
+            title="Salvar Alterações"
+            onClick={handleSubmit}
+            disabled={updateEtapa.isPending}
+          />
+        </StyledModalFooter>
+      </StyledModalBox>
+    </StyledOverlay>,
+    document.body,
   );
 };
