@@ -2,7 +2,7 @@ import { useAuthContext } from '@/auth/hooks/useAuthContext';
 import { css } from '@linaria/core';
 import { styled } from '@linaria/react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { IconBriefcase, IconCurrencyDollar, IconLayoutKanban, IconTag } from 'twenty-ui/display';
+import { IconBriefcase, IconCurrencyDollar, IconLayoutKanban, IconTag, IconUsers } from 'twenty-ui/display';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 
 const MASTER_EMAIL = 'matheus.leme@absgroup.com.br';
@@ -95,6 +95,11 @@ const CONFIG_NAV_ITEMS_BASE = [
     to: '/configuracoes/motivos-perda',
     label: 'Motivos de Perda',
     Icon: IconTag,
+  },
+  {
+    to: '/configuracoes/usuarios',
+    label: 'Usuários e Equipes',
+    Icon: IconUsers,
   },
 ] as const;
 

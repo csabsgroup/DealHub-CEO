@@ -1,5 +1,20 @@
 // Tipagens TypeScript para todas as tabelas do Supabase (Fase 2)
-// Cada tipo reflete exatamente o schema SQL das migrations 00008-00012
+// Cada tipo reflete exatamente o schema SQL das migrations 00008-00020
+
+// ===================== GESTÃO DE USUÁRIOS (migration 00020) =====================
+
+export type PerfilCRM = 'admin' | 'vendedor' | 'sdr';
+
+// Tipo unificado retornado pelo hook useUsuarios (join user_tenants + profiles)
+export type UsuarioCRM = {
+  id: string;        // user_tenants.id
+  user_id: string;   // profiles.id / auth.users.id
+  perfil_crm: PerfilCRM;
+  is_active: boolean;
+  created_at: string;
+  email: string;
+  full_name: string | null;
+};
 
 // ===================== EMPRESAS =====================
 export type Empresa = {

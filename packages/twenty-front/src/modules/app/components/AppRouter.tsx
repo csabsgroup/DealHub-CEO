@@ -111,6 +111,12 @@ const PrecificacaoConfigPage = lazy(() =>
   })),
 );
 
+const UsuariosConfigPage = lazy(() =>
+  import('~/pages/configuracoes/UsuariosConfigPage').then((m) => ({
+    default: m.UsuariosConfigPage,
+  })),
+);
+
 const Loading = () => (
   <div
     style={{
@@ -156,6 +162,7 @@ export const AppRouter = () => {
                 <Route path="motivos-perda" element={<MotivosPerdaConfigPage />} />
                 <Route path="pipelines" element={<PipelinesConfigPage />} />
                 <Route path="precificacao" element={<PrecificacaoConfigPage />} />
+                <Route path="usuarios" element={<UsuariosConfigPage />} />
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
