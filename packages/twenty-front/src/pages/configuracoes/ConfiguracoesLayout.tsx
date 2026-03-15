@@ -1,7 +1,7 @@
 import { css } from '@linaria/core';
 import { styled } from '@linaria/react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { IconBriefcase, IconLayoutKanban, IconTag } from 'twenty-ui/display';
+import { IconBriefcase, IconCurrencyDollar, IconLayoutKanban, IconTag } from 'twenty-ui/display';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 
 // --------------- Styled Components ---------------
@@ -92,6 +92,11 @@ const CONFIG_NAV_ITEMS = [
     to: '/configuracoes/motivos-perda',
     label: 'Motivos de Perda',
     Icon: IconTag,
+  },
+  {
+    to: '/configuracoes/precificacao',
+    label: 'Precificação',
+    Icon: IconCurrencyDollar,
   },
 ] as const;
 

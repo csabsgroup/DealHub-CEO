@@ -632,3 +632,33 @@ export type ImplantacaoInsert = Omit<
 export type ImplantacaoUpdate = Partial<
   Omit<Implantacao, 'id' | 'tenant_id' | 'created_at' | 'updated_at'>
 >;
+
+// ===================== PRECIFICAÇÃO PARÂMETROS =====================
+
+export type PrecificacaoParametros = {
+  id: string;
+  tenant_id: string;
+  regime_coeficientes: Record<string, number>;
+  folha_valores: Record<string, number>;
+  operacoes_coeficientes: Record<string, number>;
+  filiais_coeficientes: Record<string, number>;
+  automacao_coeficientes: Record<string, number>;
+  risco_fiscal_coeficientes: Record<string, number>;
+  plano_coeficientes: Record<string, number>;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+export type PrecificacaoParametrosInsert = Omit<
+  PrecificacaoParametros,
+  'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'deleted_at'
+> & {
+  id?: string;
+  deleted_at?: string | null;
+};
+
+export type PrecificacaoParametrosUpdate = Partial<
+  Omit<PrecificacaoParametros, 'id' | 'tenant_id' | 'created_at' | 'updated_at'>
+>;

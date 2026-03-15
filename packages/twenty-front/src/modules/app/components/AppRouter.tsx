@@ -105,6 +105,12 @@ const PipelinesConfigPage = lazy(() =>
   })),
 );
 
+const PrecificacaoConfigPage = lazy(() =>
+  import('~/pages/configuracoes/PrecificacaoConfigPage').then((m) => ({
+    default: m.PrecificacaoConfigPage,
+  })),
+);
+
 const Loading = () => (
   <div
     style={{
@@ -149,6 +155,7 @@ export const AppRouter = () => {
                 <Route path="workspace" element={<WorkspaceConfigPage />} />
                 <Route path="motivos-perda" element={<MotivosPerdaConfigPage />} />
                 <Route path="pipelines" element={<PipelinesConfigPage />} />
+                <Route path="precificacao" element={<PrecificacaoConfigPage />} />
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
