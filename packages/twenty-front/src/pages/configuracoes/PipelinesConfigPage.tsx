@@ -1,8 +1,21 @@
+import { EditarEtapaModal } from '@/crm/components/EditarEtapaModal';
+import { EditarPipelineModal } from '@/crm/components/EditarPipelineModal';
+import { NovaEtapaModal } from '@/crm/components/NovaEtapaModal';
+import { NovoPipelineModal } from '@/crm/components/NovoPipelineModal';
+import { usePipelineEtapasConfig, usePipelinesConfig, useReorderEtapas, useUpdatePipelineEtapaConfig } from '@/crm/hooks/usePipelinesConfig';
 import { styled } from '@linaria/react';
+import { useState } from 'react';
 import {
-    IconLayoutKanban
+    IconArrowDown,
+    IconArrowUp,
+    IconLayoutKanban,
+    IconPencil,
+    IconPlus,
+    IconTrash
 } from 'twenty-ui/display';
+import { Button } from 'twenty-ui/input';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
+import { Pipeline, PipelineEtapa } from '~/types/supabase';
 
 // --------------- Styled Components ---------------
 
