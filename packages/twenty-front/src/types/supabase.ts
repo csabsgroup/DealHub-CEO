@@ -317,6 +317,32 @@ export type MotivoPerdaUpdate = Partial<
   Omit<MotivoPerda, 'id' | 'tenant_id' | 'created_at' | 'updated_at'>
 >;
 
+// ===================== TIPOS_ATIVIDADE =====================
+export type TipoAtividade = {
+  id: string;
+  tenant_id: string;
+  nome: string;
+  cor: string;
+  icone: string;
+  is_active: boolean;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+export type TipoAtividadeInsert = Omit<
+  TipoAtividade,
+  'id' | 'tenant_id' | 'created_at' | 'updated_at' | 'deleted_at'
+> & {
+  id?: string;
+  deleted_at?: string | null;
+};
+
+export type TipoAtividadeUpdate = Partial<
+  Omit<TipoAtividade, 'id' | 'tenant_id' | 'created_at' | 'updated_at'>
+>;
+
 // ===================== NEGOCIOS =====================
 export type NegocioStatusFinal = 'Aberto' | 'Ganho' | 'Perdido';
 

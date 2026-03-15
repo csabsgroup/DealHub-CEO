@@ -2,7 +2,7 @@ import { useAuthContext } from '@/auth/hooks/useAuthContext';
 import { css } from '@linaria/core';
 import { styled } from '@linaria/react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { IconBriefcase, IconCurrencyDollar, IconLayoutKanban, IconShield, IconTag, IconUsers } from 'twenty-ui/display';
+import { IconBriefcase, IconCalendarEvent, IconCurrencyDollar, IconLayoutKanban, IconShield, IconTag, IconUsers } from 'twenty-ui/display';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 
 const MASTER_EMAIL = 'matheus.leme@absgroup.com.br';
@@ -105,6 +105,11 @@ const CONFIG_NAV_ITEMS_BASE = [
     to: '/configuracoes/perfis-acesso',
     label: 'Perfis de Acesso',
     Icon: IconShield,
+  },
+  {
+    to: '/configuracoes/tipos-atividade',
+    label: 'Tipos de Atividade',
+    Icon: IconCalendarEvent,
   },
 ] as const;
 

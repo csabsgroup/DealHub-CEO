@@ -123,6 +123,12 @@ const PerfisAcessoConfigPage = lazy(() =>
   })),
 );
 
+const TiposAtividadeConfigPage = lazy(() =>
+  import('~/pages/configuracoes/TiposAtividadeConfigPage').then((m) => ({
+    default: m.TiposAtividadeConfigPage,
+  })),
+);
+
 const Loading = () => (
   <div
     style={{
@@ -170,6 +176,7 @@ export const AppRouter = () => {
                 <Route path="precificacao" element={<PrecificacaoConfigPage />} />
                 <Route path="usuarios" element={<UsuariosConfigPage />} />
                 <Route path="perfis-acesso" element={<PerfisAcessoConfigPage />} />
+                <Route path="tipos-atividade" element={<TiposAtividadeConfigPage />} />
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
