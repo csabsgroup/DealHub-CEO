@@ -169,7 +169,8 @@ export const NovoPipelineModal = ({ isOpen, onClose }: NovoPipelineModalProps) =
     try {
       await createPipeline.mutateAsync(payload);
       handleClose();
-    } catch {
+    } catch (err) {
+      console.error('Erro Supabase:', err);
       setError('Erro ao salvar pipeline. Tente novamente.');
     }
   };

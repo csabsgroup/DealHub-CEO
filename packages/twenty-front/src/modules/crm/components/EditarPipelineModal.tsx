@@ -181,7 +181,8 @@ export const EditarPipelineModal = ({
     try {
       await updatePipeline.mutateAsync(payload);
       onClose();
-    } catch {
+    } catch (err) {
+      console.error('Erro Supabase:', err);
       setError('Erro ao salvar pipeline. Tente novamente.');
     }
   };

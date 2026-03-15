@@ -260,7 +260,8 @@ export const NovaEtapaModal = ({
     try {
       await createEtapa.mutateAsync(payload);
       handleClose();
-    } catch {
+    } catch (err) {
+      console.error('Erro Supabase:', err);
       setError('Erro ao salvar etapa. Tente novamente.');
     }
   };

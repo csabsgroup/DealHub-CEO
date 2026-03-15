@@ -276,7 +276,8 @@ export const EditarEtapaModal = ({
     try {
       await updateEtapa.mutateAsync(payload);
       onClose();
-    } catch {
+    } catch (err) {
+      console.error('Erro Supabase:', err);
       setError('Erro ao salvar etapa. Tente novamente.');
     }
   };
