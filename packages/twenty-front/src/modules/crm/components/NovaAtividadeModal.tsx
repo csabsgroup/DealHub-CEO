@@ -1,4 +1,5 @@
 import { useCreateAtividade } from '@/crm/hooks/useAtividades';
+import { useNegocios } from '@/crm/hooks/useNegocios';
 import { useTiposAtividade } from '@/crm/hooks/useTiposAtividade';
 import { useUsuarios } from '@/crm/hooks/useUsuarios';
 import { styled } from '@linaria/react';
