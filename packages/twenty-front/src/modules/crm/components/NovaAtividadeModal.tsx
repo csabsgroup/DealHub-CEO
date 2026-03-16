@@ -12,7 +12,7 @@ import type { AtividadeInsert } from '~/types/supabase';
 
 type NovaAtividadeModalProps = {
   isOpen: boolean;
-  negocioId: string;
+  negocioId?: string;
   onClose: () => void;
 };
 
@@ -173,6 +173,7 @@ export const NovaAtividadeModal = ({
   const [titulo, setTitulo] = useState('');
   const [descricao, setDescricao] = useState('');
   const [tipoAtividadeId, setTipoAtividadeId] = useState('');
+  const [selectedNegocioId, setSelectedNegocioId] = useState('');
   const [responsavelId, setResponsavelId] = useState('');
   const [dataVencimento, setDataVencimento] = useState('');
   const [error, setError] = useState('');
@@ -180,6 +181,7 @@ export const NovaAtividadeModal = ({
   const createAtividade = useCreateAtividade();
   const { data: tipos } = useTiposAtividade();
   const { data: usuarios } = useUsuarios();
+  const { data: negocios } = useNegocios();
 
   const handleClose = () => {
     setTitulo('');
@@ -187,9 +189,12 @@ export const NovaAtividadeModal = ({
     setTipoAtividadeId('');
     setResponsavelId('');
     setDataVencimento('');
+    setSelectedNegocioId('');
     setError('');
     onClose();
   };
+
+  const resolvedNegocioId = negocioId ?? selectedNegocioId;
 
   const handleSubmit = async () => {
     if (!titulo.trim()) {
@@ -202,7 +207,7 @@ export const NovaAtividadeModal = ({
       titulo: titulo.trim(),
       descricao: descricao.trim() || null,
       tipo: 'Outro',
-      negocio_id: negocioId,
+      negocio_id: resolvedNegocioId || null,
       responsavel_id: responsavelId || null,
       data_inicio: dataVencimento ? new Date(dataVencimento).toISOString() : null,
       data_fim: dataVencimento ? new Date(dataVencimento).toISOString() : null,
@@ -267,6 +272,24 @@ export const NovaAtividadeModal = ({
                 onChange={(e) => setDescricao(e.target.value)}
               />
             </StyledFieldGroup>
+
+            {!negocioId && (
+              <StyledFieldGroup>
+                <StyledLabel htmlFor="na-negocio">Negócio</StyledLabel>
+                <StyledSelect
+                  id="na-negocio"
+                  value={selectedNegocioId}
+                  onChange={(e) => setSelectedNegocioId(e.target.value)}
+                >
+                  <option value="">— Sem negócio —</option>
+                  {(negocios ?? []).map((n) => (
+                    <option key={n.id} value={n.id}>
+                      {n.titulo}
+                    </option>
+                  ))}
+                </StyledSelect>
+              </StyledFieldGroup>
+            )}
 
             <StyledRow>
               <StyledFieldGroup>

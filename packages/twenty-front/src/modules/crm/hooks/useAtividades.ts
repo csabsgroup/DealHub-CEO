@@ -1,3 +1,4 @@
+import { useAuthContext } from '@/auth/hooks/useAuthContext';
 import { useTenant } from '@/auth/hooks/useTenant';
 import { useQuery } from '@tanstack/react-query';
 import { useSupabaseMutation } from '~/hooks/useSupabaseMutation';
@@ -6,6 +7,7 @@ import { supabase } from '~/lib/supabase';
 import type {
     Atividade,
     AtividadeComDetalhes,
+    AtividadeComDetalhesGlobal,
     AtividadeInsert,
     AtividadeStatus,
     AtividadeTipo,
@@ -34,6 +36,40 @@ export const useAtividadesPorNegocio = (negocioId: string | null) => {
 
       if (error) throw error;
       return (data ?? []) as unknown as AtividadeComDetalhes[];
+    },
+  });
+};
+
+// Lista todas as atividades do tenant com JOIN completo (para Painel de Agenda)
+// — admins/gestores veem todas; demais papéis veem apenas as suas
+export const useTodasAtividades = () => {
+  const { tenantId } = useTenant();
+  const { userTenant } = useAuthContext();
+
+  const isAdmin = ['owner', 'admin', 'gestor_comercial'].includes(
+    userTenant?.role ?? '',
+  );
+
+  return useQuery<AtividadeComDetalhesGlobal[], Error>({
+    queryKey: [TABLE, 'todas', tenantId, userTenant?.user_id, isAdmin],
+    enabled: !!tenantId,
+    queryFn: async () => {
+      let query = supabase
+        .from(TABLE)
+        .select(
+          `*, tipos_atividade(id, nome, cor, icone), profiles!responsavel_id(id, full_name, email), negocios(id, titulo)`,
+        )
+        .eq('tenant_id', tenantId as string)
+        .is('deleted_at', null)
+        .order('data_inicio', { ascending: true });
+
+      if (!isAdmin && userTenant?.user_id) {
+        query = query.eq('responsavel_id', userTenant.user_id);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return (data ?? []) as unknown as AtividadeComDetalhesGlobal[];
     },
   });
 };

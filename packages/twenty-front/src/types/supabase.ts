@@ -466,6 +466,11 @@ export type AtividadeComDetalhes = Atividade & {
   profiles: { id: string; full_name: string | null; email: string } | null;
 };
 
+// Atividade com JOIN global (inclui negócio para Agenda / Painel central)
+export type AtividadeComDetalhesGlobal = AtividadeComDetalhes & {
+  negocios: { id: string; titulo: string } | null;
+};
+
 // ===================== SERVICOS =====================
 export type ServicoCategoria =
   | 'Contabilidade'
