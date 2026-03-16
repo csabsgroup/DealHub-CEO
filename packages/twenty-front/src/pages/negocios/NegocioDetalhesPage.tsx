@@ -1,6 +1,7 @@
 import { MarcarGanhoModal } from '@/crm/components/MarcarGanhoModal';
 import { MarcarPerdaModal } from '@/crm/components/MarcarPerdaModal';
-import { useAtividades } from '@/crm/hooks/useAtividades';
+import { NegocioAtividadesTab } from '@/crm/components/NegocioAtividadesTab';
+import { useAtividadesPorNegocio } from '@/crm/hooks/useAtividades';
 import { useContratosByDeal } from '@/crm/hooks/useContratos';
 import { useNegocio } from '@/crm/hooks/useNegocios';
 import { usePropostasByNegocio } from '@/crm/hooks/usePropostas';
@@ -18,7 +19,7 @@ import {
     IconUser,
 } from 'twenty-ui/display';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
-import type { Atividade, Contrato, Negocio, Proposta } from '~/types/supabase';
+import type { Contrato, Negocio, Proposta } from '~/types/supabase';
 
 // ─── Extended types for Supabase joined data ─────────────────────────────────
 
@@ -402,9 +403,7 @@ export const NegocioDetalhesPage = () => {
   const { data: negocioRaw, isLoading: loadingNegocio, isError } = useNegocio(negocioId);
   const { data: propostasRaw, isLoading: loadingPropostas } = usePropostasByNegocio(negocioId);
   const { data: contratosRaw, isLoading: loadingContratos } = useContratosByDeal(negocioId);
-  const { data: atividades, isLoading: loadingAtividades } = useAtividades(
-    negocioId ? { negocioId } : undefined,
-  );
+  const { data: atividades } = useAtividadesPorNegocio(negocioId);
 
   const negocio = negocioRaw as NegocioDetalhes | undefined;
   const propostas = (propostasRaw ?? []) as PropostaDetalhes[];
@@ -641,48 +640,7 @@ export const NegocioDetalhesPage = () => {
         )}
 
         {/* ── TAB 3: ATIVIDADES ── */}
-        {activeTab === 'atividades' && (
-          <>
-            {loadingAtividades && (
-              <StyledEmptyState>Carregando atividades...</StyledEmptyState>
-            )}
-            {!loadingAtividades && (!atividades || atividades.length === 0) && (
-              <StyledEmptyState>
-                Nenhuma atividade registrada para este negócio.
-              </StyledEmptyState>
-            )}
-            {!loadingAtividades && atividades && atividades.length > 0 && (
-              <StyledTableWrapper>
-                <StyledTable>
-                  <StyledTHead>
-                    <tr>
-                      <StyledTh>Tipo</StyledTh>
-                      <StyledTh>Título</StyledTh>
-                      <StyledTh>Data</StyledTh>
-                      <StyledTh>Status</StyledTh>
-                      <StyledTh>Prioridade</StyledTh>
-                    </tr>
-                  </StyledTHead>
-                  <tbody>
-                    {atividades.map((a: Atividade) => (
-                      <StyledTr key={a.id}>
-                        <StyledTd>
-                          <StyledStatusBadge>{a.tipo}</StyledStatusBadge>
-                        </StyledTd>
-                        <StyledTd>{a.titulo}</StyledTd>
-                        <StyledTdSecondary>{formatDate(a.data_inicio)}</StyledTdSecondary>
-                        <StyledTd>
-                          <StyledStatusBadge>{a.status}</StyledStatusBadge>
-                        </StyledTd>
-                        <StyledTdSecondary>{a.prioridade}</StyledTdSecondary>
-                      </StyledTr>
-                    ))}
-                  </tbody>
-                </StyledTable>
-              </StyledTableWrapper>
-            )}
-          </>
-        )}
+        {activeTab === 'atividades' && <NegocioAtividadesTab negocioId={id} />}
       </StyledContent>
       {ganhoModalOpen && (
         <MarcarGanhoModal

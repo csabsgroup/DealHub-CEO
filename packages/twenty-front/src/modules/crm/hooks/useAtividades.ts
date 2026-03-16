@@ -1,7 +1,11 @@
+import { useTenant } from '@/auth/hooks/useTenant';
+import { useQuery } from '@tanstack/react-query';
 import { useSupabaseMutation } from '~/hooks/useSupabaseMutation';
 import { useSupabaseQuery } from '~/hooks/useSupabaseQuery';
+import { supabase } from '~/lib/supabase';
 import type {
     Atividade,
+    AtividadeComDetalhes,
     AtividadeInsert,
     AtividadeStatus,
     AtividadeTipo,
@@ -9,6 +13,30 @@ import type {
 } from '~/types/supabase';
 
 const TABLE = 'atividades';
+
+// Atividades de um negócio com JOIN em tipos_atividade e profiles (responsável)
+export const useAtividadesPorNegocio = (negocioId: string | null) => {
+  const { tenantId } = useTenant();
+
+  return useQuery<AtividadeComDetalhes[], Error>({
+    queryKey: [TABLE, 'comDetalhes', negocioId, tenantId],
+    enabled: !!negocioId && !!tenantId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from(TABLE)
+        .select(
+          `*, tipos_atividade(id, nome, cor, icone), profiles!responsavel_id(id, full_name, email)`,
+        )
+        .eq('negocio_id', negocioId as string)
+        .eq('tenant_id', tenantId as string)
+        .is('deleted_at', null)
+        .order('data_inicio', { ascending: true });
+
+      if (error) throw error;
+      return (data ?? []) as unknown as AtividadeComDetalhes[];
+    },
+  });
+};
 
 // Lista atividades com filtros
 export const useAtividades = (options?: {
@@ -154,7 +182,7 @@ export const useCreateAtividade = () => {
   return useSupabaseMutation<AtividadeInsert, Atividade>({
     table: TABLE,
     type: 'insert',
-    invalidateKeys: ['negocios', 'leads', 'empresas'],
+    invalidateKeys: [TABLE, 'negocios', 'leads', 'empresas'],
   });
 };
 
@@ -163,6 +191,7 @@ export const useUpdateAtividade = () => {
   return useSupabaseMutation<AtividadeUpdate & { id: string }, Atividade>({
     table: TABLE,
     type: 'update',
+    invalidateKeys: [TABLE],
   });
 };
 

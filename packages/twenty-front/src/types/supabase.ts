@@ -460,6 +460,12 @@ export type AtividadeUpdate = Partial<
   Omit<Atividade, 'id' | 'tenant_id' | 'created_at' | 'updated_at'>
 >;
 
+// Atividade enriquecida com dados do tipo e do responsável (resultado do JOIN)
+export type AtividadeComDetalhes = Atividade & {
+  tipos_atividade: { id: string; nome: string; cor: string; icone: string } | null;
+  profiles: { id: string; full_name: string | null; email: string } | null;
+};
+
 // ===================== SERVICOS =====================
 export type ServicoCategoria =
   | 'Contabilidade'

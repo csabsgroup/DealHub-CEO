@@ -1,8 +1,10 @@
 import { useUpdateAtividade } from '@/crm/hooks/useAtividades';
+import { useTiposAtividade } from '@/crm/hooks/useTiposAtividade';
+import { useUsuarios } from '@/crm/hooks/useUsuarios';
 import { styled } from '@linaria/react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from 'twenty-ui/input';
-import { Modal, ModalContent, ModalFooter, ModalHeader } from 'twenty-ui/layout';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
 import type { Atividade, AtividadePrioridade, AtividadeStatus, AtividadeTipo } from '~/types/supabase';
 
@@ -19,6 +21,7 @@ type AtividadeFormData = {
   tipo: string;
   status: string;
   prioridade: string;
+  responsavel_id: string;
   data_inicio: string;
   descricao: string;
 };
@@ -166,6 +169,50 @@ const StyledErrorMessage = styled.p`
   margin: 0;
 `;
 
+const StyledOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+`;
+
+const StyledModalBox = styled.div`
+  background: ${themeCssVariables.background.primary};
+  border-radius: ${themeCssVariables.border.radius.md};
+  border: 1px solid ${themeCssVariables.border.color.medium};
+  padding: ${themeCssVariables.spacing[6]};
+  width: 560px;
+  max-width: 90vw;
+  max-height: 85vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: ${themeCssVariables.spacing[4]};
+`;
+
+const StyledModalHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: ${themeCssVariables.spacing[2]};
+  border-bottom: 1px solid ${themeCssVariables.border.color.light};
+`;
+
+const StyledModalContent = styled.div`
+  flex: 1;
+`;
+
+const StyledModalFooter = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: ${themeCssVariables.spacing[2]};
+  padding-top: ${themeCssVariables.spacing[2]};
+  border-top: 1px solid ${themeCssVariables.border.color.light};
+`;
+
 // --------------- Helpers ---------------
 
 const toInputDatetimeLocal = (dateStr: string | null): string => {
@@ -186,13 +233,15 @@ export const EditarAtividadeModal = ({
     tipo: 'Tarefa',
     status: 'Pendente',
     prioridade: 'Normal',
+    responsavel_id: '',
     data_inicio: '',
     descricao: '',
   });
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const formRef = useRef<HTMLFormElement>(null);
 
   const { mutateAsync: updateAtividade, isPending } = useUpdateAtividade();
+  const { data: tipos } = useTiposAtividade();
+  const { data: usuarios } = useUsuarios();
 
   // Pre-fill form when initialData changes
   useEffect(() => {
@@ -202,6 +251,7 @@ export const EditarAtividadeModal = ({
         tipo: initialData.tipo ?? 'Tarefa',
         status: initialData.status ?? 'Pendente',
         prioridade: initialData.prioridade ?? 'Normal',
+        responsavel_id: initialData.responsavel_id ?? '',
         data_inicio: toInputDatetimeLocal(initialData.data_inicio),
         descricao: initialData.descricao ?? '',
       });
@@ -223,9 +273,7 @@ export const EditarAtividadeModal = ({
     onClose();
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleSubmit = async () => {
     if (!formData.titulo.trim()) {
       setErrorMessage('Título é obrigatório.');
       return;
@@ -238,6 +286,7 @@ export const EditarAtividadeModal = ({
         tipo: formData.tipo as AtividadeTipo,
         status: formData.status as AtividadeStatus,
         prioridade: formData.prioridade as AtividadePrioridade,
+        responsavel_id: formData.responsavel_id || null,
         data_inicio: formData.data_inicio || null,
         descricao: formData.descricao.trim() || null,
       });
@@ -250,20 +299,19 @@ export const EditarAtividadeModal = ({
     }
   };
 
-  return (
-    <Modal isOpen={isOpen} size="medium" onBackdropMouseDown={handleClose}>
-      {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
-      <div onMouseDown={(e) => e.stopPropagation()}>
-        <ModalHeader>
-          <StyledTitle>Editar Atividade</StyledTitle>
-        </ModalHeader>
+  if (!isOpen) return null;
 
-        <ModalContent>
-          <StyledForm
-            onSubmit={handleSubmit}
-            id="editar-atividade-form"
-            ref={formRef}
-          >
+  return (
+    <>
+      {createPortal(
+    <StyledOverlay onClick={handleClose}>
+      <StyledModalBox onClick={(e) => e.stopPropagation()}>
+        <StyledModalHeader>
+          <StyledTitle>Editar Atividade</StyledTitle>
+        </StyledModalHeader>
+
+        <StyledModalContent>
+          <StyledForm onSubmit={(e) => e.preventDefault()}>
             <StyledFieldGroup>
               <StyledLabel htmlFor="edit-titulo">
                 Título<StyledRequired>*</StyledRequired>
@@ -329,18 +377,35 @@ export const EditarAtividadeModal = ({
               </StyledFieldGroup>
             </StyledFieldTriple>
 
-            <StyledFieldGroup>
-              <StyledLabel htmlFor="edit-data_inicio">
-                Data e Hora
-              </StyledLabel>
-              <StyledInput
-                id="edit-data_inicio"
-                name="data_inicio"
-                type="datetime-local"
-                value={formData.data_inicio}
-                onChange={handleChange}
-              />
-            </StyledFieldGroup>
+            <StyledField>
+              <StyledFieldGroup>
+                <StyledLabel htmlFor="edit-responsavel">Responsável</StyledLabel>
+                <StyledSelect
+                  id="edit-responsavel"
+                  name="responsavel_id"
+                  value={formData.responsavel_id}
+                  onChange={handleChange}
+                >
+                  <option value="">Selecione...</option>
+                  {(usuarios ?? []).map((u) => (
+                    <option key={u.user_id} value={u.user_id}>
+                      {u.full_name ?? u.email}
+                    </option>
+                  ))}
+                </StyledSelect>
+              </StyledFieldGroup>
+
+              <StyledFieldGroup>
+                <StyledLabel htmlFor="edit-data_inicio">Data e Hora</StyledLabel>
+                <StyledInput
+                  id="edit-data_inicio"
+                  name="data_inicio"
+                  type="datetime-local"
+                  value={formData.data_inicio}
+                  onChange={handleChange}
+                />
+              </StyledFieldGroup>
+            </StyledField>
 
             <StyledFieldGroup>
               <StyledLabel htmlFor="edit-descricao">Descrição</StyledLabel>
@@ -357,30 +422,27 @@ export const EditarAtividadeModal = ({
               <StyledErrorMessage>{errorMessage}</StyledErrorMessage>
             )}
           </StyledForm>
-        </ModalContent>
+        </StyledModalContent>
 
-        <ModalFooter>
-          <StyledFooter>
-            <Button
-              variant="secondary"
-              accent="default"
-              size="medium"
-              title="Cancelar"
-              onClick={handleClose}
-              disabled={isPending}
-            />
-            <Button
-              variant="primary"
-              accent="blue"
-              size="medium"
-              title={isPending ? 'Salvando...' : 'Salvar Alterações'}
-              type="submit"
-              form="editar-atividade-form"
-              disabled={isPending}
-            />
-          </StyledFooter>
-        </ModalFooter>
-      </div>
-    </Modal>
+        <StyledModalFooter>
+          <Button
+            size="small"
+            variant="secondary"
+            title="Cancelar"
+            onClick={handleClose}
+          />
+          <Button
+            size="small"
+            variant="primary"
+            title={isPending ? 'Salvando...' : 'Salvar'}
+            onClick={handleSubmit}
+            disabled={isPending}
+          />
+        </StyledModalFooter>
+      </StyledModalBox>
+    </StyledOverlay>,
+    document.body,
+  )}
+    </>
   );
 };

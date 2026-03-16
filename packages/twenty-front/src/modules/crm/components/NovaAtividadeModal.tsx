@@ -1,45 +1,20 @@
 import { useCreateAtividade } from '@/crm/hooks/useAtividades';
+import { useTiposAtividade } from '@/crm/hooks/useTiposAtividade';
+import { useUsuarios } from '@/crm/hooks/useUsuarios';
 import { styled } from '@linaria/react';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from 'twenty-ui/input';
-import { Modal, ModalContent, ModalFooter, ModalHeader } from 'twenty-ui/layout';
 import { themeCssVariables } from 'twenty-ui/theme-constants';
+import type { AtividadeInsert } from '~/types/supabase';
 
 // --------------- Types ---------------
 
 type NovaAtividadeModalProps = {
   isOpen: boolean;
+  negocioId: string;
   onClose: () => void;
 };
-
-type AtividadeFormData = {
-  titulo: string;
-  tipo: string;
-  descricao: string;
-  data_inicio: string;
-  prioridade: string;
-};
-
-const EMPTY_FORM: AtividadeFormData = {
-  titulo: '',
-  tipo: 'Tarefa',
-  descricao: '',
-  data_inicio: '',
-  prioridade: 'Normal',
-};
-
-const TIPOS = [
-  'Tarefa',
-  'Reunião',
-  'Chamada',
-  'Email',
-  'WhatsApp',
-  'Nota',
-  'Visita',
-  'Outro',
-];
-
-const PRIORIDADES = ['Baixa', 'Normal', 'Alta', 'Urgente'];
 
 // --------------- Styled Components ---------------
 
@@ -63,10 +38,10 @@ const StyledFieldGroup = styled.div`
   gap: ${themeCssVariables.spacing[1]};
 `;
 
-const StyledField = styled.div`
+const StyledRow = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: ${themeCssVariables.spacing[4]};
+  gap: ${themeCssVariables.spacing[3]};
 `;
 
 const StyledLabel = styled.label`
@@ -89,9 +64,9 @@ const StyledInput = styled.input`
   color: ${themeCssVariables.font.color.primary};
   font-size: ${themeCssVariables.font.size.sm};
   outline: none;
-  transition: border-color 0.15s ease;
   width: 100%;
   box-sizing: border-box;
+  transition: border-color 0.15s ease;
 
   &:focus {
     border-color: ${themeCssVariables.accent.primary};
@@ -111,10 +86,10 @@ const StyledSelect = styled.select`
   color: ${themeCssVariables.font.color.primary};
   font-size: ${themeCssVariables.font.size.sm};
   outline: none;
-  transition: border-color 0.15s ease;
+  cursor: pointer;
   width: 100%;
   box-sizing: border-box;
-  cursor: pointer;
+  transition: border-color 0.15s ease;
 
   &:focus {
     border-color: ${themeCssVariables.accent.primary};
@@ -130,11 +105,11 @@ const StyledTextarea = styled.textarea`
   color: ${themeCssVariables.font.color.primary};
   font-size: ${themeCssVariables.font.size.sm};
   outline: none;
-  transition: border-color 0.15s ease;
   width: 100%;
   box-sizing: border-box;
   resize: vertical;
   font-family: inherit;
+  transition: border-color 0.15s ease;
 
   &:focus {
     border-color: ${themeCssVariables.accent.primary};
@@ -145,203 +120,216 @@ const StyledTextarea = styled.textarea`
   }
 `;
 
-const StyledFooter = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  gap: ${themeCssVariables.spacing[2]};
-  padding-top: ${themeCssVariables.spacing[2]};
-`;
-
-const StyledErrorMessage = styled.p`
+const StyledError = styled.p`
   font-size: ${themeCssVariables.font.size.xs};
   color: ${themeCssVariables.font.color.danger};
   margin: 0;
 `;
 
+const StyledOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const StyledModalBox = styled.div`
+  background: ${themeCssVariables.background.primary};
+  border-radius: ${themeCssVariables.border.radius.md};
+  width: 520px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+`;
+
+const StyledModalHeader = styled.div`
+  padding: ${themeCssVariables.spacing[4]};
+  border-bottom: 1px solid ${themeCssVariables.border.color.light};
+`;
+
+const StyledModalContent = styled.div`
+  padding: ${themeCssVariables.spacing[4]};
+`;
+
+const StyledModalFooter = styled.div`
+  padding: ${themeCssVariables.spacing[3]} ${themeCssVariables.spacing[4]};
+  border-top: 1px solid ${themeCssVariables.border.color.light};
+  display: flex;
+  justify-content: flex-end;
+  gap: ${themeCssVariables.spacing[2]};
+`;
+
 // --------------- Component ---------------
 
-export const NovaAtividadeModal = ({ isOpen, onClose }: NovaAtividadeModalProps) => {
-  const [formData, setFormData] = useState<AtividadeFormData>(EMPTY_FORM);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const formRef = useRef<HTMLFormElement>(null);
+export const NovaAtividadeModal = ({
+  isOpen,
+  negocioId,
+  onClose,
+}: NovaAtividadeModalProps) => {
+  const [titulo, setTitulo] = useState('');
+  const [descricao, setDescricao] = useState('');
+  const [tipoAtividadeId, setTipoAtividadeId] = useState('');
+  const [responsavelId, setResponsavelId] = useState('');
+  const [dataVencimento, setDataVencimento] = useState('');
+  const [error, setError] = useState('');
 
-  const { mutateAsync: createAtividade, isPending } = useCreateAtividade();
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    setErrorMessage(null);
-  };
+  const createAtividade = useCreateAtividade();
+  const { data: tipos } = useTiposAtividade();
+  const { data: usuarios } = useUsuarios();
 
   const handleClose = () => {
-    setFormData(EMPTY_FORM);
-    setErrorMessage(null);
+    setTitulo('');
+    setDescricao('');
+    setTipoAtividadeId('');
+    setResponsavelId('');
+    setDataVencimento('');
+    setError('');
     onClose();
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!formData.titulo.trim()) {
-      setErrorMessage('Título é obrigatório.');
+  const handleSubmit = async () => {
+    if (!titulo.trim()) {
+      setError('O título é obrigatório.');
       return;
     }
+    setError('');
+
+    const payload: AtividadeInsert = {
+      titulo: titulo.trim(),
+      descricao: descricao.trim() || null,
+      tipo: 'Outro',
+      negocio_id: negocioId,
+      responsavel_id: responsavelId || null,
+      data_inicio: dataVencimento ? new Date(dataVencimento).toISOString() : null,
+      data_fim: dataVencimento ? new Date(dataVencimento).toISOString() : null,
+      dia_inteiro: false,
+      duracao_minutos: null,
+      status: 'Pendente',
+      prioridade: 'Normal',
+      resultado: null,
+      lembrete_minutos: null,
+      recorrencia: 'Nenhuma',
+      observacoes: null,
+      tags: [],
+      completed_at: null,
+      lead_id: null,
+      empresa_id: null,
+      contato_id: null,
+      criado_por_id: null,
+    };
 
     try {
-      await createAtividade({
-        titulo: formData.titulo.trim(),
-        tipo: formData.tipo as
-          | 'Tarefa'
-          | 'Reunião'
-          | 'Chamada'
-          | 'Email'
-          | 'WhatsApp'
-          | 'Nota'
-          | 'Visita'
-          | 'Outro',
-        descricao: formData.descricao.trim() || null,
-        data_inicio: formData.data_inicio || null,
-        data_fim: null,
-        dia_inteiro: false,
-        duracao_minutos: null,
-        status: 'Pendente',
-        prioridade: formData.prioridade as 'Baixa' | 'Normal' | 'Alta' | 'Urgente',
-        resultado: null,
-        lembrete_minutos: null,
-        recorrencia: 'Nenhuma',
-        observacoes: null,
-        tags: [],
-        completed_at: null,
-        lead_id: null,
-        empresa_id: null,
-        contato_id: null,
-        negocio_id: null,
-        responsavel_id: null,
-        criado_por_id: null,
-      });
-
+      await createAtividade.mutateAsync(payload);
       handleClose();
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro ao criar atividade.';
-      setErrorMessage(message);
+      console.error('Erro Supabase:', err);
+      setError('Erro ao salvar atividade. Tente novamente.');
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <Modal isOpen={isOpen} size="medium" onBackdropMouseDown={handleClose}>
-      {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
-      <div onMouseDown={(e) => e.stopPropagation()}>
-      <ModalHeader>
-        <StyledTitle>Nova Atividade</StyledTitle>
-      </ModalHeader>
+    <>
+      {createPortal(
+    <StyledOverlay onClick={handleClose}>
+      <StyledModalBox onClick={(e) => e.stopPropagation()}>
+        <StyledModalHeader>
+          <StyledTitle>Nova Atividade</StyledTitle>
+        </StyledModalHeader>
 
-      <ModalContent>
-        <StyledForm onSubmit={handleSubmit} id="nova-atividade-form" ref={formRef}>
-          {/* Título - full width */}
-          <StyledFieldGroup>
-            <StyledLabel htmlFor="atividade-titulo">
-              O que precisa ser feito?<StyledRequired>*</StyledRequired>
-            </StyledLabel>
-            <StyledInput
-              id="atividade-titulo"
-              name="titulo"
-              type="text"
-              placeholder="Ex: Ligar para cliente sobre proposta"
-              value={formData.titulo}
-              onChange={handleChange}
-              autoFocus
-            />
-          </StyledFieldGroup>
-
-          {/* Tipo + Prioridade */}
-          <StyledField>
+        <StyledModalContent>
+          <StyledForm id="nova-atividade-form" onSubmit={(e) => e.preventDefault()}>
             <StyledFieldGroup>
-              <StyledLabel htmlFor="atividade-tipo">Tipo</StyledLabel>
-              <StyledSelect
-                id="atividade-tipo"
-                name="tipo"
-                value={formData.tipo}
-                onChange={handleChange}
-              >
-                {TIPOS.map((tipo) => (
-                  <option key={tipo} value={tipo}>
-                    {tipo}
-                  </option>
-                ))}
-              </StyledSelect>
+              <StyledLabel htmlFor="na-titulo">
+                Título <StyledRequired>*</StyledRequired>
+              </StyledLabel>
+              <StyledInput
+                id="na-titulo"
+                type="text"
+                placeholder="Ex: Call de apresentação, Reunião de fechamento"
+                value={titulo}
+                onChange={(e) => setTitulo(e.target.value)}
+                autoFocus
+              />
             </StyledFieldGroup>
 
             <StyledFieldGroup>
-              <StyledLabel htmlFor="atividade-prioridade">Prioridade</StyledLabel>
-              <StyledSelect
-                id="atividade-prioridade"
-                name="prioridade"
-                value={formData.prioridade}
-                onChange={handleChange}
-              >
-                {PRIORIDADES.map((p) => (
-                  <option key={p} value={p}>
-                    {p}
-                  </option>
-                ))}
-              </StyledSelect>
+              <StyledLabel htmlFor="na-descricao">Descrição</StyledLabel>
+              <StyledTextarea
+                id="na-descricao"
+                placeholder="Detalhes da atividade (opcional)"
+                value={descricao}
+                onChange={(e) => setDescricao(e.target.value)}
+              />
             </StyledFieldGroup>
-          </StyledField>
 
-          {/* Data de início */}
-          <StyledFieldGroup>
-            <StyledLabel htmlFor="atividade-data">Data de Início</StyledLabel>
-            <StyledInput
-              id="atividade-data"
-              name="data_inicio"
-              type="datetime-local"
-              value={formData.data_inicio}
-              onChange={handleChange}
-            />
-          </StyledFieldGroup>
+            <StyledRow>
+              <StyledFieldGroup>
+                <StyledLabel htmlFor="na-tipo">Tipo de Atividade</StyledLabel>
+                <StyledSelect
+                  id="na-tipo"
+                  value={tipoAtividadeId}
+                  onChange={(e) => setTipoAtividadeId(e.target.value)}
+                >
+                  <option value="">— Selecione —</option>
+                  {(tipos ?? []).map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.nome}
+                    </option>
+                  ))}
+                </StyledSelect>
+              </StyledFieldGroup>
 
-          {/* Descrição */}
-          <StyledFieldGroup>
-            <StyledLabel htmlFor="atividade-descricao">Descrição</StyledLabel>
-            <StyledTextarea
-              id="atividade-descricao"
-              name="descricao"
-              placeholder="Descreva os detalhes desta atividade..."
-              value={formData.descricao}
-              onChange={handleChange}
-            />
-          </StyledFieldGroup>
+              <StyledFieldGroup>
+                <StyledLabel htmlFor="na-responsavel">Responsável</StyledLabel>
+                <StyledSelect
+                  id="na-responsavel"
+                  value={responsavelId}
+                  onChange={(e) => setResponsavelId(e.target.value)}
+                >
+                  <option value="">— Selecione —</option>
+                  {(usuarios ?? []).map((u) => (
+                    <option key={u.user_id} value={u.user_id}>
+                      {u.full_name ?? u.email}
+                    </option>
+                  ))}
+                </StyledSelect>
+              </StyledFieldGroup>
+            </StyledRow>
 
-          {errorMessage && (
-            <StyledErrorMessage>{errorMessage}</StyledErrorMessage>
-          )}
-        </StyledForm>
-      </ModalContent>
+            <StyledFieldGroup>
+              <StyledLabel htmlFor="na-data">Data e Hora de Vencimento</StyledLabel>
+              <StyledInput
+                id="na-data"
+                type="datetime-local"
+                value={dataVencimento}
+                onChange={(e) => setDataVencimento(e.target.value)}
+              />
+            </StyledFieldGroup>
 
-      <ModalFooter>
-        <StyledFooter>
+            {error && <StyledError>{error}</StyledError>}
+          </StyledForm>
+        </StyledModalContent>
+
+        <StyledModalFooter>
+          <Button size="small" variant="secondary" title="Cancelar" onClick={handleClose} />
           <Button
-            variant="secondary"
-            accent="default"
-            size="medium"
-            title="Cancelar"
-            onClick={handleClose}
-            type="button"
-          />
-          <Button
+            size="small"
             variant="primary"
-            accent="blue"
-            size="medium"
             title="Criar Atividade"
-            isLoading={isPending}
-            type="button"
-            onClick={() => formRef.current?.requestSubmit()}
+            onClick={handleSubmit}
+            disabled={createAtividade.isPending}
           />
-        </StyledFooter>
-      </ModalFooter>
-      </div>
-    </Modal>
+        </StyledModalFooter>
+      </StyledModalBox>
+    </StyledOverlay>,
+    document.body,
+  )}
+    </>
   );
 };
