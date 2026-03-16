@@ -260,11 +260,11 @@ const buildSections = (
       concluidas.push(a);
       continue;
     }
-    if (!a.data_inicio) {
+    if (!a.data_vencimento) {
       semData.push(a);
       continue;
     }
-    const d = new Date(a.data_inicio);
+    const d = new Date(a.data_vencimento);
     if (d < todayStart) {
       atrasadas.push(a);
     } else if (d < tomorrowStart) {
@@ -301,8 +301,8 @@ const AtividadeCard = ({
   const isDone = atividade.status === 'Concluída';
   const isOverdue =
     !isDone &&
-    !!atividade.data_inicio &&
-    new Date(atividade.data_inicio) < new Date();
+    !!atividade.data_vencimento &&
+    new Date(atividade.data_vencimento) < new Date();
 
   return (
     <StyledCard
@@ -321,8 +321,8 @@ const AtividadeCard = ({
           {atividade.tipos_atividade && (
             <StyledMetaText>{atividade.tipos_atividade.nome}</StyledMetaText>
           )}
-          {atividade.data_inicio && (
-            <StyledMetaText>{formatDateTime(atividade.data_inicio)}</StyledMetaText>
+          {atividade.data_vencimento && (
+            <StyledMetaText>{formatDateTime(atividade.data_vencimento)}</StyledMetaText>
           )}
           {atividade.profiles?.full_name && (
             <StyledMetaText>{atividade.profiles.full_name}</StyledMetaText>

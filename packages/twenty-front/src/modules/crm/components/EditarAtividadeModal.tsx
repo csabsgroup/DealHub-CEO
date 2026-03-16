@@ -22,7 +22,7 @@ type AtividadeFormData = {
   status: string;
   prioridade: string;
   responsavel_id: string;
-  data_inicio: string;
+  data_vencimento: string;
   descricao: string;
 };
 
@@ -234,8 +234,8 @@ export const EditarAtividadeModal = ({
     status: 'Pendente',
     prioridade: 'Normal',
     responsavel_id: '',
-    data_inicio: '',
-    descricao: '',
+    data_vencimento: '',
+    descricao: ''
   });
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -252,8 +252,8 @@ export const EditarAtividadeModal = ({
         status: initialData.status ?? 'Pendente',
         prioridade: initialData.prioridade ?? 'Normal',
         responsavel_id: initialData.responsavel_id ?? '',
-        data_inicio: toInputDatetimeLocal(initialData.data_inicio),
-        descricao: initialData.descricao ?? '',
+        data_vencimento: toInputDatetimeLocal(initialData.data_vencimento),
+        descricao: initialData.descricao ?? ''
       });
     }
   }, [initialData]);
@@ -287,7 +287,7 @@ export const EditarAtividadeModal = ({
         status: formData.status as AtividadeStatus,
         prioridade: formData.prioridade as AtividadePrioridade,
         responsavel_id: formData.responsavel_id || null,
-        data_inicio: formData.data_inicio || null,
+        data_vencimento: formData.data_vencimento || null,
         descricao: formData.descricao.trim() || null,
       });
 
@@ -396,12 +396,12 @@ export const EditarAtividadeModal = ({
               </StyledFieldGroup>
 
               <StyledFieldGroup>
-                <StyledLabel htmlFor="edit-data_inicio">Data e Hora</StyledLabel>
+                <StyledLabel htmlFor="edit-data_vencimento">Data e Hora</StyledLabel>
                 <StyledInput
-                  id="edit-data_inicio"
-                  name="data_inicio"
+                  id="edit-data_vencimento"
+                  name="data_vencimento"
                   type="datetime-local"
-                  value={formData.data_inicio}
+                  value={formData.data_vencimento}
                   onChange={handleChange}
                 />
               </StyledFieldGroup>

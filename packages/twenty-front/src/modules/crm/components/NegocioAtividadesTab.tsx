@@ -230,8 +230,8 @@ export const NegocioAtividadesTab = ({
                   {a.profiles?.full_name && (
                     <StyledMetaText>{a.profiles.full_name}</StyledMetaText>
                   )}
-                  {a.data_inicio && (
-                    <StyledMetaText>{formatDate(a.data_inicio)}</StyledMetaText>
+                  {a.data_vencimento && (
+                    <StyledMetaText>{formatDate(a.data_vencimento)}</StyledMetaText>
                   )}
                 </StyledCardMeta>
               </StyledCardBody>

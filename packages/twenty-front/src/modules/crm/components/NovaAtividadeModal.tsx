@@ -210,7 +210,7 @@ export const NovaAtividadeModal = ({
       tipo: 'Outro',
       negocio_id: resolvedNegocioId || null,
       responsavel_id: responsavelId || null,
-      data_inicio: dataVencimento ? new Date(dataVencimento).toISOString() : null,
+      data_vencimento: dataVencimento ? new Date(dataVencimento).toISOString() : null,
       data_fim: dataVencimento ? new Date(dataVencimento).toISOString() : null,
       dia_inteiro: false,
       duracao_minutos: null,

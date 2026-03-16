@@ -431,7 +431,7 @@ export type Atividade = {
   negocio_id: string | null;
   responsavel_id: string | null;
   criado_por_id: string | null;
-  data_inicio: string | null;
+  data_vencimento: string | null;
   data_fim: string | null;
   dia_inteiro: boolean;
   duracao_minutos: number | null;

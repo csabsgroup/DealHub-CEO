@@ -32,7 +32,7 @@ export const useAtividadesPorNegocio = (negocioId: string | null) => {
         .eq('negocio_id', negocioId as string)
         .eq('tenant_id', tenantId as string)
         .is('deleted_at', null)
-        .order('data_inicio', { ascending: true });
+        .order('data_vencimento', { ascending: true, nullsFirst: false });
 
       if (error) throw error;
       return (data ?? []) as unknown as AtividadeComDetalhes[];
@@ -61,7 +61,7 @@ export const useTodasAtividades = () => {
         )
         .eq('tenant_id', tenantId as string)
         .is('deleted_at', null)
-        .order('data_inicio', { ascending: true });
+        .order('data_vencimento', { ascending: true });
 
       if (!isAdmin && userTenant?.user_id) {
         query = query.eq('responsavel_id', userTenant.user_id);
@@ -148,7 +148,7 @@ export const useAtividades = (options?: {
   return useSupabaseQuery<Atividade[]>({
     table: TABLE,
     filters,
-    order: [{ column: 'data_inicio', ascending: true }],
+    order: [{ column: 'data_vencimento', ascending: true }],
     limit: options?.limit,
     offset: options?.offset,
     queryKeyExtra: [options],
@@ -160,7 +160,7 @@ export const useAtividadesByNegocio = (negocioId: string | null) => {
   return useSupabaseQuery<Atividade[]>({
     table: TABLE,
     filters: [{ column: 'negocio_id', operator: 'eq', value: negocioId }],
-    order: [{ column: 'data_inicio', ascending: false }],
+    order: [{ column: 'data_vencimento', ascending: true }],
     enabled: !!negocioId,
     queryKeyExtra: ['byNegocio', negocioId],
   });
@@ -171,7 +171,7 @@ export const useAtividadesByEmpresa = (empresaId: string | null) => {
   return useSupabaseQuery<Atividade[]>({
     table: TABLE,
     filters: [{ column: 'empresa_id', operator: 'eq', value: empresaId }],
-    order: [{ column: 'data_inicio', ascending: false }],
+    order: [{ column: 'data_vencimento', ascending: false }],
     enabled: !!empresaId,
     queryKeyExtra: ['byEmpresa', empresaId],
   });
@@ -182,7 +182,7 @@ export const useAtividadesByLead = (leadId: string | null) => {
   return useSupabaseQuery<Atividade[]>({
     table: TABLE,
     filters: [{ column: 'lead_id', operator: 'eq', value: leadId }],
-    order: [{ column: 'data_inicio', ascending: false }],
+    order: [{ column: 'data_vencimento', ascending: false }],
     enabled: !!leadId,
     queryKeyExtra: ['byLead', leadId],
   });
@@ -196,7 +196,7 @@ export const useMinhasAtividadesPendentes = (userId: string | null) => {
       { column: 'responsavel_id', operator: 'eq', value: userId },
       { column: 'status', operator: 'in', value: ['Pendente', 'Em andamento'] },
     ],
-    order: [{ column: 'data_inicio', ascending: true }],
+    order: [{ column: 'data_vencimento', ascending: false }],
     enabled: !!userId,
     queryKeyExtra: ['minhasPendentes', userId],
   });

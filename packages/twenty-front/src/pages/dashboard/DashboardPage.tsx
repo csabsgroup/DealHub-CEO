@@ -298,8 +298,8 @@ export const DashboardPage = () => {
     return atividades
       .filter((a) => a.status === 'Pendente' || a.status === 'Em andamento')
       .sort((a, b) => {
-        const dateA = a.data_inicio ? new Date(a.data_inicio).getTime() : Infinity;
-        const dateB = b.data_inicio ? new Date(b.data_inicio).getTime() : Infinity;
+        const dateA = a.data_vencimento ? new Date(a.data_vencimento).getTime() : Infinity;
+        const dateB = b.data_vencimento ? new Date(b.data_vencimento).getTime() : Infinity;
         return dateA - dateB;
       })
       .slice(0, 5);
@@ -431,13 +431,13 @@ export const DashboardPage = () => {
                     <StyledRecentTitle>{atv.titulo}</StyledRecentTitle>
                     <div>
                       <StyledRecentMeta>
-                        {atv.data_inicio
+                        {atv.data_vencimento
                           ? new Intl.DateTimeFormat('pt-BR', {
                               day: '2-digit',
                               month: '2-digit',
                               hour: '2-digit',
                               minute: '2-digit',
-                            }).format(new Date(atv.data_inicio))
+                            }).format(new Date(atv.data_vencimento))
                           : 'Sem data'}
                       </StyledRecentMeta>
                     </div>

@@ -653,7 +653,7 @@ export const EmpresaDetalhesPage = () => {
                         </StyledTd>
                         <StyledTd>{a.titulo}</StyledTd>
                         <StyledTdSecondary>
-                          {formatDate(a.data_inicio)}
+                          {formatDate(a.data_vencimento)}
                         </StyledTdSecondary>
                         <StyledTd>
                           <StyledStatusBadge>{a.status}</StyledStatusBadge>
